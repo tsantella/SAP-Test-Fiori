@@ -1,0 +1,87 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog id="dlgImportLog"
+            title="Import Logs View"
+            contentWidth="700px"
+            resizable="true">
+
+        <content>
+            <VBox id="_IDGenLogVBox" class="sapUiSmallMargin">
+
+                <Text id="txtInitiatedBy" text="Initiated By: {importLog>/initiatedBy}" class="sapUiTinyMarginBottom"/>
+                <Text id="txtCreatedDate" text="Created Date: {importLog>/createdDate}" class="sapUiTinyMarginBottom"/>
+                <Text id="txtErrorCount" text="Number of Validation Errors: {importLog>/errorCount}" class="sapUiTinyMarginBottom"/>
+                <Text id="txtImportStatus" text="Import Status: {importLog>/importStatus}" class="sapUiSmallMarginBottom"/>
+
+                <Panel id="pnlErrorLogs" headerText="View Error Logs" expandable="true" expanded="true">
+
+                    <!-- Pagination toolbar -->
+                    <Toolbar id="tbErrorPagination" class="sapUiTinyMarginBottom">
+                        <ToolbarSpacer id="_IDGenErrToolbarSpacer"/>
+
+                        <Button id="btnErrFirstPage"
+                                icon="sap-icon://media-rewind"
+                                type="Transparent"
+                                press="onErrFirstPage"
+                                enabled="false"
+                                tooltip="First Page"/>
+
+                        <Button id="btnErrPreviousPage"
+                                icon="sap-icon://slim-arrow-left"
+                                type="Transparent"
+                                press="onErrPreviousPage"
+                                enabled="false"
+                                tooltip="Previous Page"/>
+
+                        <Text id="txtErrPaginationInfo"
+                              text="0 to 0 of 0"
+                              class="sapUiTinyMarginBeginEnd"/>
+
+                        <Button id="btnErrNextPage"
+                                icon="sap-icon://slim-arrow-right"
+                                type="Transparent"
+                                press="onErrNextPage"
+                                enabled="false"
+                                tooltip="Next Page"/>
+
+                        <Button id="btnErrLastPage"
+                                icon="sap-icon://media-forward"
+                                type="Transparent"
+                                press="onErrLastPage"
+                                enabled="false"
+                                tooltip="Last Page"/>
+                    </Toolbar>
+
+                    <Table id="tblImportErrors" items="{importLog>/errors}" inset="false">
+                        <columns>
+                            <Column id="_IDGenErrColCreator"><Text id="_IDGenErrTxtCreator" text="Creator"/></Column>
+                            <Column id="_IDGenErrColTitle"><Text id="_IDGenErrTxtTitle" text="Title"/></Column>
+                            <Column id="_IDGenErrColCycleStatus"><Text id="_IDGenErrTxtCycleStatus" text="Cycle Status"/></Column>
+                            <Column id="_IDGenErrColUploadStatus"><Text id="_IDGenErrTxtUploadStatus" text="Upload Status"/></Column>
+                            <Column id="_IDGenErrColReason"><Text id="_IDGenErrTxtReason" text="Reason"/></Column>
+                        </columns>
+                        <items>
+                            <ColumnListItem id="_IDGenErrItem">
+                                <cells>
+                                    <Text id="_IDGenErrCellCreator" text="{importLog>Creator}"/>
+                                    <Text id="_IDGenErrCellTitle" text="{importLog>Title}"/>
+                                    <Text id="_IDGenErrCellCycleStatus" text="{importLog>CycleStatus}"/>
+                                    <Text id="_IDGenErrCellUploadStatus" text="{importLog>UploadStatus}"/>
+                                    <Text id="_IDGenErrCellReason" text="{importLog>Reason}"/>
+                                </cells>
+                            </ColumnListItem>
+                        </items>
+                    </Table>
+                </Panel>
+
+            </VBox>
+        </content>
+
+        <endButton>
+            <Button id="btnCloseImportLog" text="Close" press="onCloseImportLog"/>
+        </endButton>
+
+    </Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,66 @@
+<mvc:View controllerName="project1.controller.CycleModel"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Page id="CycleModel" showHeader="false" class="cycleModelPage">
+        <content>
+            <VBox id="_IDGenVBox2">
+
+                <!-- Custom header bar, matches MyCycles page style -->
+                <HBox id="detailHeaderBox" class="myCycleHeaderWrapper" alignItems="Center" justifyContent="SpaceBetween">
+                    <HBox id="_IDGenHBox1" alignItems="Center">
+                        <!-- <Button id="btnBack"
+                                icon="sap-icon://nav-back"
+                                type="Transparent"
+                                press="onNavBack"
+                                class="sapUiTinyMarginEnd"/> -->
+                        <FlexBox id="detailTitleBadge" class="myCycleBadge" alignItems="Center" justifyContent="Center">
+                            <Text id="detailTitleBadgeText" text="{i18n>CycleModel}" class="myCycleBadgeText"/>
+                        </FlexBox>
+                    </HBox>
+                </HBox>
+
+                <!-- Main content card -->
+                <VBox id="detailCard" class="cycleDetailCard">
+
+                    <!-- Title row -->
+                    <Text id="_IDGenTitleText" text="{selectedCycle>/Title}" class="cycleDetailTitle"/>
+                    <Text id="_IDGenCreatorText" text="Created by {selectedCycle>/Creator}" class="cycleDetailSubtitle sapUiTinyMarginBottom"/>
+
+                    <!-- Divider -->
+                    <core:HTML id="_IDGenDivider" content="&lt;hr class=&quot;cycleDivider&quot;/&gt;"/>
+
+                    <!-- Status fields as a grid -->
+                    <HBox id="statusRow" class="sapUiMediumMarginTop" wrap="Wrap">
+
+                        <VBox id="_IDGenCycleStatusBox" class="cycleDetailField">
+                            <Text id="_IDGenLabelCycle" text="CYCLE STATUS" class="cycleFieldLabel"/>
+                            <ObjectStatus id="_IDGenStatusCycle"
+                                          text="{selectedCycle>/CycleStatus}"
+                                          state="{
+                                              path: 'selectedCycle>/CycleStatus',
+                                              formatter: '.formatCycleStatusState'
+                                          }"
+                                          class="sapUiTinyMarginTop"/>
+                        </VBox>
+
+                        <VBox id="_IDGenUploadStatusBox" class="cycleDetailField">
+                            <Text id="_IDGenLabelUpload" text="UPLOAD STATUS" class="cycleFieldLabel"/>
+                            <ObjectStatus id="_IDGenStatusUpload"
+                                          text="{selectedCycle>/UploadStatus}"
+                                          state="{
+                                              path: 'selectedCycle>/UploadStatus',
+                                              formatter: '.formatUploadStatusState'
+                                          }"
+                                          class="sapUiTinyMarginTop"/>
+                        </VBox>
+
+                    </HBox>
+
+                </VBox>
+
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

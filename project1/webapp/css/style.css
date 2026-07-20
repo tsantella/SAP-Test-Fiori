@@ -1,1 +1,151 @@
-/* Enter your custom styles here */
+.pillButton {
+    border-radius: 2rem !important;
+}
+
+.pillButtonGreen .sapMBtnInner {
+    background-color: #4CAF50 !important;
+    border-color: #4CAF50 !important;
+    color: #fff !important;
+    border-radius: 2rem !important;
+}
+
+.pillButtonOrange .sapMBtnInner {
+    background-color: #FF5722 !important;
+    border-color: #FF5722 !important;
+    color: #fff !important;
+    border-radius: 2rem !important;
+}
+
+.pillButtonGrey .sapMBtnInner {
+    background-color: #9E9E9E !important;
+    border-color: #9E9E9E !important;
+    color: #fff !important;
+    border-radius: 2rem !important;
+}
+
+.newCycleDialog .sapMDialogTitle {
+    font-weight: 700;
+}
+
+.hiddenFileUploader {
+    display: none !important;
+}
+
+/* Pill-shaped buttons */
+.pillButton .sapMBtnInner {
+    border-radius: 2rem !important;
+    padding-left: 1rem;
+    padding-right: 1.2rem;
+}
+
+/* Grey pill buttons (Search, New, Delete, View) */
+.pillButtonGrey .sapMBtnInner {
+    background-color: #8c8c8c !important;
+    border-color: #8c8c8c !important;
+    color: #ffffff !important;
+}
+.pillButtonGrey .sapMBtnIcon {
+    color: #ffffff !important;
+}
+.pillButtonGrey.sapMBtnDisabled .sapMBtnInner {
+    background-color: #c4c4c4 !important;
+    border-color: #c4c4c4 !important;
+    opacity: 1 !important;
+}
+
+/* Row selected highlight (peach), if not already defined elsewhere */
+.rowSelected {
+    background-color: #f5b895 !important;
+}
+
+/* Row selected highlight (peach) */
+tr.sapMListTblRow.rowSelected,
+tr.sapMListTblRow.rowSelected:hover,
+tr.sapMListTblRow.rowSelected.sapMLIBFocused {
+    background-color: #f5b895 !important;
+}
+
+tr.sapMListTblRow.rowSelected td {
+    background-color: #f5b895 !important;
+}
+
+/* Wrapper: gives us the divider line + room for the diagonal accent */
+.myCycleHeaderWrapper {
+    border-bottom: 1px solid #d9d9d9;
+    padding-bottom: 0;
+    margin-bottom: 1rem;
+    margin-top: 2.5rem;      
+}
+
+.myCycleBadge {
+    background-color: #FF3300; /* orange-red, adjust to match your brand */
+    border-radius: 8px 8px 0 0;
+    padding: 0.5rem 1.5rem;
+    display: inline-flex;
+    margin-bottom: -1px; /* so its bottom edge sits on top of the divider line */
+}
+
+.myCycleBadgeText {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+/* Remove focus outline on the pill buttons */
+.pillButton:focus,
+.pillButton:focus-visible,
+.pillButton.sapMFocus {
+    outline: none !important;
+}
+
+/* Remove focus outline on table rows (covers the ColumnListItem) */
+.sapMListTblRow:focus,
+.sapMListTblRow:focus-visible,
+.sapMListTblRow.sapMFocus,
+.sapMLIB:focus,
+.sapMLIB:focus-visible,
+.sapMLIB.sapMFocus {
+    outline: none !important;
+}
+
+.cycleModelPage {
+    background-color: #f5f6f8;
+}
+
+.cycleDetailCard {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.cycleDetailTitle {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.cycleDetailSubtitle {
+    font-size: 0.9rem;
+    color: #6a6a6a;
+}
+
+.cycleDivider {
+    border: none;
+    border-top: 1px solid #e5e5e5;
+    margin: 16px 0 4px 0;
+}
+
+.cycleDetailField {
+    min-width: 200px;
+    margin-right: 48px;
+    margin-bottom: 12px;
+}
+
+.cycleFieldLabel {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: #9a9a9a;
+}

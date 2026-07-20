@@ -2,5 +2,8 @@
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m">
     <Page id="page" title="{i18n>title}">
+        <content>
+            <Button id="_IDGenButton" text="Go to My Cycles" press="onNavToMyCycles" />
+            </content>
     </Page>
 </mvc:View>

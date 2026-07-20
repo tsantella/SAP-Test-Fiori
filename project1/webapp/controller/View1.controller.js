@@ -5,6 +5,11 @@ sap.ui.define([
 
     return Controller.extend("project1.controller.View1", {
         onInit() {
+        },
+        onNavToMyCycles: function() {
+            var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+            oRouter.navTo("RouteMyCycles");
         }
+
     });
 });

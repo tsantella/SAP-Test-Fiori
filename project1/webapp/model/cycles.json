@@ -1,0 +1,88 @@
+{
+  "Cycles": [
+    {
+      "Creator": "1Arvind Ramakrishna",
+      "Title": "Cycle of May 2026",
+      "CycleStatus": "WorkInProgress",
+      "UploadStatus": "Finished"
+    },
+    {
+      "Creator": "2Jane Doe",
+      "Title": "Cycle of June 2026",
+      "CycleStatus": "Completed",
+      "UploadStatus": "Pending"
+    },
+    {
+      "Creator": "3Arvind Ramakrishna",
+      "Title": "Cycle of May 2026",
+      "CycleStatus": "WorkInProgress",
+      "UploadStatus": "Finished"
+    },
+    {
+      "Creator": "4Jane Doe",
+      "Title": "Cycle of June 2026",
+      "CycleStatus": "Completed",
+      "UploadStatus": "Pending"
+    },
+    {
+      "Creator": "5Arvind Ramakrishna",
+      "Title": "Cycle of May 2026",
+      "CycleStatus": "WorkInProgress",
+      "UploadStatus": "Finished"
+    },
+    {
+      "Creator": "6Jane Doe",
+      "Title": "Cycle of June 2026",
+      "CycleStatus": "Completed",
+      "UploadStatus": "Pending"
+    },
+    {
+      "Creator": "7Arvind Ramakrishna",
+      "Title": "Cycle of May 2026",
+      "CycleStatus": "WorkInProgress",
+      "UploadStatus": "Finished"
+    },
+    {
+      "Creator": "8Jane Doe",
+      "Title": "Cycle of June 2026",
+      "CycleStatus": "Completed",
+      "UploadStatus": "Pending"
+    },
+    {
+      "Creator": "9Arvind Ramakrishna",
+      "Title": "Cycle of May 2026",
+      "CycleStatus": "WorkInProgress",
+      "UploadStatus": "Finished"
+    },
+    {
+      "Creator": "10Jane Doe",
+      "Title": "Cycle of June 2026",
+      "CycleStatus": "Completed",
+      "UploadStatus": "Pending"
+    },
+    {
+      "Creator": "11Arvind Ramakrishna",
+      "Title": "Cycle of May 2026",
+      "CycleStatus": "WorkInProgress",
+      "UploadStatus": "Finished"
+    },
+    {
+      "Creator": "12Jane Doe",
+      "Title": "Cycle of June 2026",
+      "CycleStatus": "Completed",
+      "UploadStatus": "Pending"
+    },
+    {
+      "Creator": "13Arvind Ramakrishna",
+      "Title": "Cycle of May 2026",
+      "CycleStatus": "WorkInProgress",
+      "UploadStatus": "Finished"
+    },
+    {
+      "Creator": "14Jane Doe",
+      "Title": "Cycle of June 2026",
+      "CycleStatus": "Completed",
+      "UploadStatus": "Pending"
+    }
+  ]
+}

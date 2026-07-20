@@ -79,12 +79,34 @@
           "target": [
             "TargetView1"
           ]
+        },
+        {
+          "name": "RouteMyCycles",
+          "pattern": "mycycles",
+          "target": [
+            "TargetMyCycles"
+          ]
+        },
+        {
+          "name": "RouteCycleModel",
+          "pattern": "cyclemodel",
+          "target": [
+            "TargetCycleModel"
+          ]
         }
       ],
       "targets": {
         "TargetView1": {
           "id": "View1",
           "name": "View1"
+        },
+        "TargetMyCycles": {
+          "id": "MyCycles",
+          "name": "MyCycles"
+        },
+        "TargetCycleModel": {
+          "id": "CycleModel",
+          "name": "CycleModel"
         }
       }
     },
