@@ -93,7 +93,14 @@
           "target": [
             "TargetCycleModel"
           ]
-        }
+        },
+		{
+    	  "name": "RouteModelsWithMe",
+          "pattern": "modelswithme",
+          "target": [
+            "TargetModelsWithMe"
+        	]
+      	}
       ],
       "targets": {
         "TargetView1": {
@@ -107,7 +114,11 @@
         "TargetCycleModel": {
           "id": "CycleModel",
           "name": "CycleModel"
-        }
+        },
+		"TargetModelsWithMe": {
+	      "id": "ModelsWithMe",
+	      "name": "ModelsWithMe"
+	    }
       }
     },
     "rootView": {
