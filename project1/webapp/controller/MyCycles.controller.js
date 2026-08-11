@@ -10,38 +10,13 @@ sap.ui.define([
 
         onNavBack: function() {
             // Example navigation back
-            window.history.go(-1);
+            // window.history.go(-1);
         },
 
         onSearch: function() { sap.m.MessageToast.show("Search button clicked!"); },
-        onNew: function() { sap.m.MessageToast.show("New button clicked!"); },
 
         onDelete: function() {
-            if (this._oSelectedContext) {
-                // Local index within the current page's slice (e.g. "/Cycles/3")
-                var sPath = this._oSelectedContext.getPath();
-                var aParts = sPath.split("/");
-                var iLocalIndex = parseInt(aParts[aParts.length - 1], 10);
-
-                // Convert to the index in the FULL dataset
-                var iGlobalIndex = (this._iCurrentPage - 1) * this._iPageSize + iLocalIndex;
-
-                // Remove from the full dataset, not the page slice
-                this._aAllCycles.splice(iGlobalIndex, 1);
-
-                // If we deleted the last item on the last page, step back a page
-                var iTotalPages = this._getTotalPages();
-                if (this._iCurrentPage > iTotalPages) {
-                    this._iCurrentPage = iTotalPages;
-                }
-
-                this._oSelectedContext = null;
-                this._updatePage();
-
-                this._clearSelection();
-                sap.m.MessageToast.show("Row deleted!");
-            }
-
+            
             // Disable again until another row is selected
             this.byId("btnDelete").setEnabled(false);
             this.byId("btnView").setEnabled(false);
@@ -365,10 +340,10 @@ sap.ui.define([
                         var sUploadStatus = (oRow.UploadStatus || "").toString().trim();
 
                         var aMissingFields = [];
-                        if (!sCreator) aMissingFields.push("Creator");
-                        if (!sTitle) aMissingFields.push("Title");
-                        if (!sCycleStatus) aMissingFields.push("Cycle Status");
-                        if (!sUploadStatus) aMissingFields.push("Upload Status");
+                        if (!sCreator) { aMissingFields.push("Creator"); }
+                        if (!sTitle) { aMissingFields.push("Title"); }
+                        if (!sCycleStatus) { aMissingFields.push("Cycle Status"); }
+                        if (!sUploadStatus) { aMissingFields.push("Upload Status"); }
 
                         if (aMissingFields.length > 0) {
                             aErrorLogs.push({
