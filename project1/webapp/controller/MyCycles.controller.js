@@ -3,8 +3,9 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/ui/core/Fragment",
     "sap/m/MessageToast",
-    "sap/m/MessageBox"
-], function(Controller, JSONModel, Fragment, MessageToast, MessageBox) {
+    "sap/m/MessageBox",
+    "project1/service/util/MyCycles.service"
+], function(Controller, JSONModel, Fragment, MessageToast, MessageBox, MyCyclesService) {
     "use strict";
     return Controller.extend("project1.controller.MyCycles", {
 
@@ -13,35 +14,29 @@ sap.ui.define([
             // window.history.go(-1);
         },
 
-        onSearch: function() { sap.m.MessageToast.show("Search button clicked!"); },
+        onSearch: function() {
+            MessageToast.show("Search button clicked!");
+        },
+
+        // ===================== Row actions =====================
 
         onDelete: function() {
             if (this._oSelectedContext) {
-                // Local index within the current page's slice (e.g. "/Cycles/3")
                 var sPath = this._oSelectedContext.getPath();
-                var aParts = sPath.split("/");
-                var iLocalIndex = parseInt(aParts[aParts.length - 1], 10);
+                var iGlobalIndex = MyCyclesService.getGlobalIndex(sPath, this._iCurrentPage, this._iPageSize);
 
-                // Convert to the index in the FULL dataset
-                var iGlobalIndex = (this._iCurrentPage - 1) * this._iPageSize + iLocalIndex;
+                this._aAllCycles = MyCyclesService.deleteCycle(this._aAllCycles, iGlobalIndex);
 
-                // Remove from the full dataset, not the page slice
-                this._aAllCycles.splice(iGlobalIndex, 1);
-
-                // If we deleted the last item on the last page, step back a page
-                var iTotalPages = this._getTotalPages();
-                if (this._iCurrentPage > iTotalPages) {
-                    this._iCurrentPage = iTotalPages;
-                }
+                var iTotalPages = MyCyclesService.getTotalPages(this._aAllCycles, this._iPageSize);
+                this._iCurrentPage = MyCyclesService.clampPage(this._iCurrentPage, iTotalPages);
 
                 this._oSelectedContext = null;
                 this._updatePage();
 
                 this._clearSelection();
-                sap.m.MessageToast.show("Row deleted!");
+                MessageToast.show("Row deleted!");
             }
 
-            // Disable again until another row is selected
             this.byId("btnDelete").setEnabled(false);
             this.byId("btnView").setEnabled(false);
             this.byId("btnStopCycle").setEnabled(false);
@@ -59,7 +54,7 @@ sap.ui.define([
                 var oSelectedModel = oComponent.getModel("selectedCycle");
 
                 if (!oSelectedModel) {
-                    oSelectedModel = new sap.ui.model.json.JSONModel();
+                    oSelectedModel = new JSONModel();
                     oComponent.setModel(oSelectedModel, "selectedCycle");
                 }
                 oSelectedModel.setData(oSelectedData);
@@ -72,20 +67,15 @@ sap.ui.define([
 
         onStopCycle: function() {
             if (this._oSelectedContext) {
-                // Update the CycleStatus property of the selected row
-                // (works directly on the page-slice context, which is fine since
-                // the slice array elements are the SAME object references as in
-                // _aAllCycles, so the underlying data stays in sync)
                 this._oSelectedContext.getModel().setProperty(
                     this._oSelectedContext.getPath() + "/CycleStatus",
                     "Stopped"
                 );
 
                 this._clearSelection();
-                sap.m.MessageToast.show("Cycle stopped!");
+                MessageToast.show("Cycle stopped!");
             }
 
-            // Disable again until another row is selected
             this.byId("btnDelete").setEnabled(false);
             this.byId("btnView").setEnabled(false);
             this.byId("btnStopCycle").setEnabled(false);
@@ -94,29 +84,21 @@ sap.ui.define([
         onRowPress: function(oEvent) {
             var oItem = oEvent.getSource();
 
-            // Reset all rows first
             var oTable = this.byId("tblCycles");
             oTable.getItems().forEach(function(row) {
                 row.removeStyleClass("rowSelected");
             });
 
-            // Highlight the clicked row
             oItem.addStyleClass("rowSelected");
 
-            // Save the binding context of the selected row
             this._oSelectedContext = oItem.getBindingContext("cycles");
 
-            // Enable the button
             this.byId("btnDelete").setEnabled(true);
             this.byId("btnView").setEnabled(true);
 
-            if(this._oSelectedContext) {
+            if (this._oSelectedContext) {
                 var oSelectedData = this._oSelectedContext.getObject();
-                if (oSelectedData.CycleStatus === "WorkInProgress") {
-                    this.byId("btnStopCycle").setEnabled(true);
-                } else {
-                    this.byId("btnStopCycle").setEnabled(false);
-                }
+                this.byId("btnStopCycle").setEnabled(MyCyclesService.isCycleStoppable(oSelectedData));
             }
         },
 
@@ -135,7 +117,7 @@ sap.ui.define([
         },
 
         onNextPage: function() {
-            var iTotalPages = this._getTotalPages();
+            var iTotalPages = MyCyclesService.getTotalPages(this._aAllCycles, this._iPageSize);
             if (this._iCurrentPage < iTotalPages) {
                 this._iCurrentPage++;
                 this._updatePage();
@@ -143,29 +125,17 @@ sap.ui.define([
         },
 
         onLastPage: function() {
-            this._iCurrentPage = this._getTotalPages();
+            this._iCurrentPage = MyCyclesService.getTotalPages(this._aAllCycles, this._iPageSize);
             this._updatePage();
         },
 
-        _getTotalPages: function() {
-            return Math.max(1, Math.ceil(this._aAllCycles.length / this._iPageSize));
-        },
-
         _updatePage: function() {
-            var iTotal = this._aAllCycles.length;
-            var iTotalPages = this._getTotalPages();
-            var iStart = (this._iCurrentPage - 1) * this._iPageSize;
-            var iEnd = Math.min(iStart + this._iPageSize, iTotal);
-            var aPageData = this._aAllCycles.slice(iStart, iEnd);
+            var oResult = MyCyclesService.getPageSlice(this._aAllCycles, this._iCurrentPage, this._iPageSize);
+            var iTotalPages = MyCyclesService.getTotalPages(this._aAllCycles, this._iPageSize);
 
-            // Push the current page's slice into the table's model
-            this.getView().getModel("cycles").setProperty("/Cycles", aPageData);
+            this.getView().getModel("cycles").setProperty("/Cycles", oResult.slice);
+            this.byId("txtPaginationInfo").setText(oResult.from + " to " + oResult.to + " of " + oResult.total);
 
-            // Update "X to Y of Z" text
-            var iFrom = iTotal === 0 ? 0 : iStart + 1;
-            this.byId("txtPaginationInfo").setText(iFrom + " to " + iEnd + " of " + iTotal);
-
-            // Enable/disable nav buttons at the edges
             this.byId("btnFirstPage").setEnabled(this._iCurrentPage > 1);
             this.byId("btnPreviousPage").setEnabled(this._iCurrentPage > 1);
             this.byId("btnNextPage").setEnabled(this._iCurrentPage < iTotalPages);
@@ -187,7 +157,7 @@ sap.ui.define([
         },
 
         onErrNextPage: function() {
-            var iTotalPages = this._getErrTotalPages();
+            var iTotalPages = MyCyclesService.getErrTotalPages(this._aAllImportErrors, this._iErrPageSize);
             if (this._iErrCurrentPage < iTotalPages) {
                 this._iErrCurrentPage++;
                 this._updateErrorPage();
@@ -195,47 +165,30 @@ sap.ui.define([
         },
 
         onErrLastPage: function() {
-            this._iErrCurrentPage = this._getErrTotalPages();
+            this._iErrCurrentPage = MyCyclesService.getErrTotalPages(this._aAllImportErrors, this._iErrPageSize);
             this._updateErrorPage();
         },
 
-        _getErrTotalPages: function() {
-            return Math.max(1, Math.ceil(this._aAllImportErrors.length / this._iErrPageSize));
-        },
-
         _updateErrorPage: function() {
-            var iTotal = this._aAllImportErrors.length;
-            var iTotalPages = this._getErrTotalPages();
-            var iStart = (this._iErrCurrentPage - 1) * this._iErrPageSize;
-            var iEnd = Math.min(iStart + this._iErrPageSize, iTotal);
-            var aPageData = this._aAllImportErrors.slice(iStart, iEnd);
+            var oResult = MyCyclesService.getErrPageSlice(this._aAllImportErrors, this._iErrCurrentPage, this._iErrPageSize);
+            var iTotalPages = MyCyclesService.getErrTotalPages(this._aAllImportErrors, this._iErrPageSize);
 
-            // Push current page slice into the dialog's model
-            this._oImportLogDialog.getModel("importLog").setProperty("/errors", aPageData);
+            this._oImportLogDialog.getModel("importLog").setProperty("/errors", oResult.slice);
 
-            // Update "X to Y of Z" text
-            var iFrom = iTotal === 0 ? 0 : iStart + 1;
-            Fragment.byId(this.getView().getId(), "txtErrPaginationInfo").setText(iFrom + " to " + iEnd + " of " + iTotal);
+            var sViewId = this.getView().getId();
+            Fragment.byId(sViewId, "txtErrPaginationInfo").setText(oResult.from + " to " + oResult.to + " of " + oResult.total);
 
-            // Enable/disable nav buttons at the edges
-            Fragment.byId(this.getView().getId(), "btnErrFirstPage").setEnabled(this._iErrCurrentPage > 1);
-            Fragment.byId(this.getView().getId(), "btnErrPreviousPage").setEnabled(this._iErrCurrentPage > 1);
-            Fragment.byId(this.getView().getId(), "btnErrNextPage").setEnabled(this._iErrCurrentPage < iTotalPages);
-            Fragment.byId(this.getView().getId(), "btnErrLastPage").setEnabled(this._iErrCurrentPage < iTotalPages);
+            Fragment.byId(sViewId, "btnErrFirstPage").setEnabled(this._iErrCurrentPage > 1);
+            Fragment.byId(sViewId, "btnErrPreviousPage").setEnabled(this._iErrCurrentPage > 1);
+            Fragment.byId(sViewId, "btnErrNextPage").setEnabled(this._iErrCurrentPage < iTotalPages);
+            Fragment.byId(sViewId, "btnErrLastPage").setEnabled(this._iErrCurrentPage < iTotalPages);
         },
 
         // ===================== Init =====================
 
         onInit: function() {
-            // ---- Pagination setup ----
             this._iPageSize = 10;
             this._iCurrentPage = 1;
-
-            if (typeof XLSX === "undefined") {
-                var oScript = document.createElement("script");
-                oScript.src = sap.ui.require.toUrl("project1/thirdparty/xlsx.full.min.js");
-                document.head.appendChild(oScript);
-            }
 
             this._xlsxReady = new Promise(function(resolve, reject) {
                 if (typeof XLSX !== "undefined") {
@@ -251,33 +204,26 @@ sap.ui.define([
 
             var that = this;
 
-            // The "cycles" model only ever holds the CURRENT page's slice
             var oCyclesModel = new JSONModel({ Cycles: [] });
             this.getView().setModel(oCyclesModel, "cycles");
 
-            // Load your existing static file
-            // NOTE: "webapp" is your project root and is NOT part of the resolved URL.
-            // Adjust this path to match where cycles.json actually sits under webapp/.
             var sPath = sap.ui.require.toUrl("project1/model/cycles.json");
             oCyclesModel.loadData(sPath);
 
             oCyclesModel.attachRequestCompleted(function() {
-                // Store the full dataset once it's loaded, THEN render the first page
                 that._aAllCycles = oCyclesModel.getProperty("/Cycles");
                 that._updatePage();
             });
 
-            // ---- Existing outside-click deselect logic ----
             var oPage = this.byId("MyCycles");
 
             oPage.addEventDelegate({
                 onclick: function(oEvent) {
                     var oTable = that.byId("tblCycles");
 
-                    // Ignore clicks on the action buttons
                     var sTargetId = oEvent.target.id;
                     if (sTargetId.includes("btnDelete") || sTargetId.includes("btnView") || sTargetId.includes("btnStopCycle")) {
-                        return; // let the button press handler run
+                        return;
                     }
 
                     var bIsRowClick = oTable.getItems().some(function(row) {
@@ -285,12 +231,10 @@ sap.ui.define([
                     });
 
                     if (!bIsRowClick) {
-                        // Disable buttons if click is outside table or on header
                         that.byId("btnDelete").setEnabled(false);
                         that.byId("btnView").setEnabled(false);
                         that.byId("btnStopCycle").setEnabled(false);
 
-                        // Remove row highlight
                         oTable.getItems().forEach(function(row) {
                             row.removeStyleClass("rowSelected");
                         });
@@ -298,6 +242,8 @@ sap.ui.define([
                 }
             });
         },
+
+        // ===================== New Cycle dialog =====================
 
         onNew: function() {
             var oView = this.getView();
@@ -318,8 +264,7 @@ sap.ui.define([
         },
 
         onCreateWithImport: function() {
-            // Don't close the dialog yet — open the native file picker instead
-            var oFileUploader = sap.ui.core.Fragment.byId(this.getView().getId(), "fuExcelImport");
+            var oFileUploader = Fragment.byId(this.getView().getId(), "fuExcelImport");
             oFileUploader.$().find("input[type=file]").trigger("click");
         },
 
@@ -354,49 +299,16 @@ sap.ui.define([
                             return;
                         }
 
-                        var aValidCycles = [];
-                        var aErrorLogs = [];
+                        var oResult = MyCyclesService.validateImportRows(aRows);
 
-                        aRows.forEach(function(oRow) {
-                        var sCreator = (oRow.Creator || "").toString().trim();
-                        var sTitle = (oRow.Title || "").toString().trim();
-                        var sCycleStatus = (oRow.CycleStatus || "").toString().trim();
-                        var sUploadStatus = (oRow.UploadStatus || "").toString().trim();
-
-                        var aMissingFields = [];
-                        if (!sCreator) { aMissingFields.push("Creator"); }
-                        if (!sTitle) { aMissingFields.push("Title"); }
-                        if (!sCycleStatus) { aMissingFields.push("Cycle Status"); }
-                        if (!sUploadStatus) { aMissingFields.push("Upload Status"); }
-
-                        if (aMissingFields.length > 0) {
-                            aErrorLogs.push({
-                                Creator: sCreator,
-                                Title: sTitle,
-                                CycleStatus: sCycleStatus,
-                                UploadStatus: sUploadStatus,
-                                Reason: "Missing required field(s): " + aMissingFields.join(", ") + "."
-                            });
-                            return;
-                        }
-
-                        aValidCycles.push({
-                            Creator: sCreator,
-                            Title: sTitle,
-                            CycleStatus: sCycleStatus,
-                            UploadStatus: sUploadStatus
-                        });
-                    });
-
-                        if (aErrorLogs.length > 0) {
-                            that._showImportLog(aErrorLogs);
+                        if (oResult.errors.length > 0) {
+                            that._showImportLog(oResult.errors);
                         } else {
-                            // No validation errors — proceed with import as before
-                            that._aAllCycles = that._aAllCycles.concat(aValidCycles);
-                            that._iCurrentPage = that._getTotalPages();
+                            that._aAllCycles = MyCyclesService.mergeImportedCycles(that._aAllCycles, oResult.valid);
+                            that._iCurrentPage = MyCyclesService.getTotalPages(that._aAllCycles, that._iPageSize);
                             that._updatePage();
 
-                            MessageToast.show(aValidCycles.length + " cycle(s) imported successfully!");
+                            MessageToast.show(oResult.valid.length + " cycle(s) imported successfully!");
                             that._oNewCycleDialog.close();
                         }
 
@@ -416,7 +328,6 @@ sap.ui.define([
             var oView = this.getView();
             var that = this;
 
-            // Store full error list + pagination state separately from the dialog model
             this._aAllImportErrors = aErrorLogs;
             this._iErrPageSize = 10;
             this._iErrCurrentPage = 1;
@@ -458,18 +369,15 @@ sap.ui.define([
             // TODO: clone the most recent cycle
         },
 
-        _clearSelection: function () {
+        _clearSelection: function() {
             var oTable = this.byId("tblCycles");
 
-            // Remove highlight from all rows
-            oTable.getItems().forEach(function (oRow) {
+            oTable.getItems().forEach(function(oRow) {
                 oRow.removeStyleClass("rowSelected");
             });
 
-            // Clear selected context
             this._oSelectedContext = null;
 
-            // Disable action buttons
             this.byId("btnDelete").setEnabled(false);
             this.byId("btnView").setEnabled(false);
             this.byId("btnStopCycle").setEnabled(false);
