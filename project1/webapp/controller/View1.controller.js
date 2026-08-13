@@ -9,6 +9,14 @@ sap.ui.define([
         onNavToMyCycles: function() {
             var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
             oRouter.navTo("RouteMyCycles");
+        },
+        onNavToApprovalFlow: function() {
+            var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+            oRouter.navTo("RouteApprovalFlow");
+        },
+        onNavToStatus: function() {
+            var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+            oRouter.navTo("RouteStatus");
         }
 
     });

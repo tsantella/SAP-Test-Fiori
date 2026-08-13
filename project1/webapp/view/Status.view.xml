@@ -1,0 +1,12 @@
+<mvc:View controllerName="project1.controller.Status"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+    <Page id="Status" showHeader="false" class="statusPage">
+        <content>
+            <VBox id="statusBox" class="statusBox">
+                <Label id="statusLabel" text="Status" class="statusLabel"/>
+                <Text id="statusText" text="This is the status page." class="statusText"/>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

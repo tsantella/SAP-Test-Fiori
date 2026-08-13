@@ -88,6 +88,20 @@
           ]
         },
         {
+          "name": "RouteApprovalFlow",
+          "pattern": "approvalflow",
+          "target": [
+            "TargetApprovalFlow"
+          ]
+        },
+        {
+          "name": "RouteStatus",
+          "pattern": "status",
+          "target": [
+            "TargetStatus"
+          ]
+        },
+        {
           "name": "RouteCycleModel",
           "pattern": "cyclemodel",
           "target": [
@@ -103,6 +117,14 @@
         "TargetMyCycles": {
           "id": "MyCycles",
           "name": "MyCycles"
+        },
+        "TargetApprovalFlow": {
+          "id": "ApprovalFlow",
+          "name": "ApprovalFlow"
+        },
+        "TargetStatus": {
+          "id": "Status",
+          "name": "Status"
         },
         "TargetCycleModel": {
           "id": "CycleModel",
