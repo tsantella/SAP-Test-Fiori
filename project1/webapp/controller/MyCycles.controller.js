@@ -15,7 +15,32 @@ sap.ui.define([
         },
 
         onSearch: function() {
-            MessageToast.show("Search button clicked!");
+            var oSearchField = this.byId("sfCreatorSearch");
+            var bVisible = oSearchField.getVisible();
+
+            oSearchField.setVisible(!bVisible);
+
+            if (bVisible) {
+                // Hiding it again — clear the field and reset the filter
+                oSearchField.setValue("");
+                this._aAllCycles = this._aAllCyclesUnfiltered || this._aAllCycles;
+                this._iCurrentPage = 1;
+                this._updatePage();
+            } else {
+                oSearchField.focus();
+            }
+        },
+
+        onSearchLiveChange: function(oEvent) {
+            var sQuery = oEvent.getParameter("newValue");
+
+            if (!this._aAllCyclesUnfiltered) {
+                this._aAllCyclesUnfiltered = this._aAllCycles;
+            }
+
+            this._aAllCycles = MyCyclesService.searchByCreator(this._aAllCyclesUnfiltered, sQuery);
+            this._iCurrentPage = 1;
+            this._updatePage();
         },
 
         // ===================== Row actions =====================
@@ -212,6 +237,7 @@ sap.ui.define([
 
             oCyclesModel.attachRequestCompleted(function() {
                 that._aAllCycles = oCyclesModel.getProperty("/Cycles");
+                that._aAllCyclesUnfiltered = that._aAllCycles;
                 that._updatePage();
             });
 

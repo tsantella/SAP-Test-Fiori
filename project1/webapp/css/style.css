@@ -149,3 +149,11 @@ tr.sapMListTblRow.rowSelected td {
     letter-spacing: 0.05em;
     color: #9a9a9a;
 }
+
+.sapUshellApplicationContainerLimitedWidth,
+.sapUShellApplicationContainer,
+#__container1 {
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+}

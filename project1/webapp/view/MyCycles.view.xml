@@ -21,6 +21,11 @@
                         icon="sap-icon://search"
                         press="onSearch"
                         class="pillButton pillButtonGrey"/>
+                <SearchField id="sfCreatorSearch"
+                        width="12rem"
+                        visible="false"
+                        liveChange="onSearchLiveChange"
+                        class="sapUiTinyMarginBegin"/>
                 <Button id="btnNew"
                         text="{i18n>new}"
                         icon="sap-icon://document-text"

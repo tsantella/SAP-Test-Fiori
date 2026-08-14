@@ -24,6 +24,19 @@ sap.ui.define([], function() {
             return aAllCycles;
         },
 
+        /**
+         * Filters cycles by Creator only, live as-you-type.
+         */
+        searchByCreator: function(aAllCycles, sQuery) {
+            if (!sQuery) {
+                return aAllCycles;
+            }
+            var sLower = sQuery.toLowerCase();
+            return aAllCycles.filter(function(oCycle) {
+                return (oCycle.Creator || "").toLowerCase().includes(sLower);
+            });
+        },
+
         getTotalPages: function(aAllCycles, iPageSize) {
             return Math.max(1, Math.ceil(aAllCycles.length / iPageSize));
         },
