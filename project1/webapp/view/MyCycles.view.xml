@@ -21,11 +21,16 @@
                         icon="sap-icon://search"
                         press="onSearch"
                         class="pillButton pillButtonGrey"/>
-                <SearchField id="sfCreatorSearch"
-                        width="12rem"
-                        visible="false"
-                        liveChange="onSearchLiveChange"
-                        class="sapUiTinyMarginBegin"/>
+                <HBox id="hboxSearchWrapper" visible="false" alignItems="Center" class="sapUiTinyMarginBegin">
+                    <SearchField id="sfCreatorSearch"
+                            width="12rem"
+                            liveChange="onSearchLiveChange"/>
+                    <Button id="btnCloseSearch"
+                            icon="sap-icon://decline"
+                            type="Transparent"
+                            press="onCloseSearch"
+                            class="sapUiTinyMarginBegin"/>
+                </HBox>
                 <Button id="btnNew"
                         text="{i18n>new}"
                         icon="sap-icon://document-text"

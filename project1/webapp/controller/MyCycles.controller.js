@@ -15,20 +15,31 @@ sap.ui.define([
         },
 
         onSearch: function() {
-            var oSearchField = this.byId("sfCreatorSearch");
-            var bVisible = oSearchField.getVisible();
+            var oSearchWrapper = this.byId("hboxSearchWrapper");
+            var oSearchButton = this.byId("btnSearch");
+            var bVisible = oSearchWrapper.getVisible();
 
-            oSearchField.setVisible(!bVisible);
+            oSearchWrapper.setVisible(!bVisible);
 
             if (bVisible) {
-                // Hiding it again — clear the field and reset the filter
-                oSearchField.setValue("");
-                this._aAllCycles = this._aAllCyclesUnfiltered || this._aAllCycles;
-                this._iCurrentPage = 1;
-                this._updatePage();
+                this._resetSearch();
             } else {
-                oSearchField.focus();
+                this.byId("sfCreatorSearch").focus();
+                oSearchButton.addStyleClass("pillButtonActive");
             }
+        },
+
+        onCloseSearch: function() {
+            this.byId("hboxSearchWrapper").setVisible(false);
+            this._resetSearch();
+        },
+
+        _resetSearch: function() {
+            this.byId("sfCreatorSearch").setValue("");
+            this._aAllCycles = this._aAllCyclesUnfiltered || this._aAllCycles;
+            this._iCurrentPage = 1;
+            this._updatePage();
+            this.byId("btnSearch").removeStyleClass("pillButtonActive");
         },
 
         onSearchLiveChange: function(oEvent) {
