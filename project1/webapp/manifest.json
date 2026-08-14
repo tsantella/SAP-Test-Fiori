@@ -95,6 +95,13 @@
           ]
         },
         {
+          "name": "RouteApprovalFlowModel",
+          "pattern": "approvalflowmodel",
+          "target": [
+            "TargetApprovalFlowModel"
+          ]
+        },
+        {
           "name": "RouteStatus",
           "pattern": "status",
           "target": [
@@ -121,6 +128,10 @@
         "TargetApprovalFlow": {
           "id": "ApprovalFlow",
           "name": "ApprovalFlow"
+        },
+        "TargetApprovalFlowModel": {
+          "id": "ApprovalFlowModel",
+          "name": "ApprovalFlowModel"
         },
         "TargetStatus": {
           "id": "Status",

@@ -23,7 +23,6 @@
                         icon="sap-icon://search"
                         press="allRequestsSearch"
                         class="pillButton pillButtonGrey"/>
-                <Input id="allRequestsInput" placeholder="{i18n>Search}" width="150px" visible="false" submit="onSearchSubmit"/>
                 <Button id="allRequestsView"
                         text="{i18n>View}"
                         icon="sap-icon://show"
@@ -100,6 +99,29 @@
                         enabled="false"
                         tooltip="Last Page"/>
                 </Toolbar>
+                <!-- Filters -->
+                <Toolbar id="filtersToolbar" visible="false">
+                    <Text id="modelVersionFilterText" text="{i18n>Model Version}" class="FontTextBold"/>
+                    <Input id="modelVersionInput" placeholder="{i18n>Search}" width="150px"  />
+                    <Text id="modelFilterText" text="{i18n>Model}" class="FontTextBold"/>
+                    <Input id="modelInput" placeholder="{i18n>Search}" width="150px" />
+                    <Button id="FilterSearch"
+                        text="{i18n>Search}"
+                        icon="sap-icon://search"
+                        press="onSearchSubmit"
+                        class="pillButton pillButtonGrey"/>
+                    <Button id="FilterClear"
+                        text="{i18n>Clear}"
+                        icon="sap-icon://delete"
+                        press="onSearchClear"
+                        class="pillButton pillButtonGrey"/>
+                    <Button id="closeFilters"
+                        text="{i18n>Close}"
+                        icon="sap-icon://decline"
+                        press="onCloseFilters"
+                        type="Reject"
+                        class="pillButton pillButtonRed"/>
+                </Toolbar>
 
                 <!-- Table -->
                 <Table id="tbApprovalFlow"
@@ -163,14 +185,14 @@
                         id="myRequestFirstPage"
                         icon="sap-icon://media-rewind"
                         type="Transparent"
-                        press="myRequestsFirstPage"
+                        press="onFirstPage"
                         enabled="false"
                         tooltip="{i18n>firstPage}"/>
                         <Button
                         id="myRequestPreviousPage"
                         icon="sap-icon://slim-arrow-left"
                         type="Transparent"
-                        press="myRequestsPreviousPage"
+                        press="onPreviousPage"
                         enabled="false"
                         tooltip="Previous Page"/>
 
@@ -183,7 +205,7 @@
                         id="myRequestNextPage"
                         icon="sap-icon://slim-arrow-right"
                         type="Transparent"
-                        press="myRequestsNextPage"
+                        press="onNextPage"
                         enabled="false"
                         tooltip="Next Page"/>
 
@@ -191,7 +213,7 @@
                         id="myRequestLastPage"
                         icon="sap-icon://media-forward"
                         type="Transparent"
-                        press="myRequestsLastPage"
+                        press="onLastPage"
                         enabled="false"
                         tooltip="Last Page"/>
                 </Toolbar>
@@ -257,14 +279,14 @@
                         id="newRequestFirstPage"
                         icon="sap-icon://media-rewind"
                         type="Transparent"
-                        press="newRequestsFirstPage"
+                        press="onFirstPage"
                         enabled="false"
                         tooltip="{i18n>firstPage}"/>
                     <Button
                         id="newRequestPreviousPage"
                         icon="sap-icon://slim-arrow-left"
                         type="Transparent"
-                        press="newRequestsPreviousPage"
+                        press="onPreviousPage"
                         enabled="false"
                         tooltip="Previous Page"/>
 
@@ -277,7 +299,7 @@
                         id="newRequestNextPage"
                         icon="sap-icon://slim-arrow-right"
                         type="Transparent"
-                        press="newRequestsNextPage"
+                        press="onNextPage"
                         enabled="false"
                         tooltip="Next Page"/>
 
@@ -285,7 +307,7 @@
                         id="newRequestLastPage"
                         icon="sap-icon://media-forward"
                         type="Transparent"
-                        press="newRequestsLastPage"
+                        press="onLastPage"
                         enabled="false"
                         tooltip="Last Page"/>
                 </Toolbar>
