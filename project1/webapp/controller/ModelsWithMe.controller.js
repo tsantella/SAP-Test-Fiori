@@ -26,6 +26,14 @@ sap.ui.define([
                  that._rebuildDropdownOptions();
               });
 
+            var oDefaultsModel = new JSONModel();
+            var sDefaultsPath = sap.ui.require.toUrl("project1/model/modeldetail.json");
+            oDefaultsModel.loadData(sDefaultsPath);
+            oDefaultsModel.attachRequestCompleted(function () {
+                that._oBlankModelTemplate = oDefaultsModel.getProperty("/BlankModel") || {};
+                that._aMockBudgetRows = oDefaultsModel.getProperty("/MockBudgetRows") || [];
+            });
+
             // Listen for saves coming back from the detail (Edit/New) screen
             EventBus.getInstance().subscribe("app", "modelSaved", this._onModelSaved, this);
 
@@ -125,43 +133,17 @@ sap.ui.define([
             oRouter.navTo("RouteModelDetail");
         },
 
+    
         _createBlankModel: function () {
-            return {
-                Status: "ACTIVE",
-                ModelStatus: "ACTIVE",
-                ModelVersion: "",
-                Model: "",
-                OEGroup: "",
-                OEGroupNr: "",
-                Brand: "",
-                BrandNr: "",
-                SubGroup: "",
-                Region: "",
-                Country: "",
-                PropulsionType: "",
-                Platform: "",
-                PlatformNr: "",
-                VehicleSegment: "",
-                DevelopmentCode: "",
-                SOP: null,
-                EOP: null,
-                BudgetRows: this._getBlankBudgetRows()
-            };
+            var oTemplate = JSON.parse(JSON.stringify(this._oBlankModelTemplate || {}));
+            oTemplate.BudgetRows = this._getBlankBudgetRows();
+            return oTemplate;
         },
 
+       
         _getMockBudgetRows: function () {
-            return [
-                { Year: "2026", Budget: "0",     LastFC: "0",     NewFC: "0",     LastIV: "0",     NewIV: "0",     BudgetView: "" },
-                { Year: "2027", Budget: "0",     LastFC: "0",     NewFC: "0",     LastIV: "0",     NewIV: "0",     BudgetView: "" },
-                { Year: "2028", Budget: "3,174", LastFC: "3,174", NewFC: "3,174", LastIV: "3,174", NewIV: "3,174", BudgetView: "" },
-                { Year: "2029", Budget: "4,000", LastFC: "",      NewFC: "4,000", LastIV: "",      NewIV: "",      BudgetView: "" },
-                { Year: "2030", Budget: "4,500", LastFC: "",      NewFC: "4,500", LastIV: "",      NewIV: "",      BudgetView: "" },
-                { Year: "2031", Budget: "4,537", LastFC: "",      NewFC: "4,537", LastIV: "",      NewIV: "",      BudgetView: "" },
-                { Year: "2032", Budget: "",      LastFC: "",      NewFC: "4,500", LastIV: "",      NewIV: "",      BudgetView: "4,500" },
-                { Year: "2033", Budget: "",      LastFC: "",      NewFC: "4,500", LastIV: "",      NewIV: "",      BudgetView: "4,500" },
-                { Year: "2034", Budget: "",      LastFC: "",      NewFC: "4,586", LastIV: "",      NewIV: "",      BudgetView: "4,586" },
-                { Year: "2035", Budget: "",      LastFC: "",      NewFC: "5,061", LastIV: "",      NewIV: "",      BudgetView: "5,061" }
-            ];
+            var aSource = this._aMockBudgetRows || [];
+            return JSON.parse(JSON.stringify(aSource));
         },
 
         _getBlankBudgetRows: function () {
