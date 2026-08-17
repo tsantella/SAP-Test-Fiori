@@ -30,5 +30,7 @@
     { "Year": "2033", "Budget": "",      "LastFC": "",      "NewFC": "4,500", "LastIV": "",      "NewIV": "",      "BudgetView": "4,500" },
     { "Year": "2034", "Budget": "",      "LastFC": "",      "NewFC": "4,586", "LastIV": "",      "NewIV": "",      "BudgetView": "4,586" },
     { "Year": "2035", "Budget": "",      "LastFC": "",      "NewFC": "5,061", "LastIV": "",      "NewIV": "",      "BudgetView": "5,061" }
-  ]
+  ],
+  "Years": ["2026", "2027", "2028", "2029", "2030", "2031", "2032", "2033", "2034", "2035"],
+  "DefaultStatus": "ACTIVE"
 }
