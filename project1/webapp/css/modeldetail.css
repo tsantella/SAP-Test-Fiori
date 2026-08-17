@@ -1,0 +1,218 @@
+
+/* Prevents the form row from overflowing horizontally instead of wrapping */
+.modelDetailPage,
+.modelDetailPage .sapMPage {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+}
+
+.modelDetailPage .detailAppTitle {
+    color: black !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+}
+
+.modelDetailPage .detailIconBtn {
+    background: #ffffff !important;
+    border-radius: 50% !important;
+    width: 2rem !important;
+    height: 2rem !important;
+    min-width: 2rem !important;
+    margin-left: 0.5rem !important;
+    flex-shrink: 0 !important;
+}
+
+/* Buttons */
+.modelDetailPage .pillButtonGreen {
+    background-color: #3CB043 !important;
+    border-color: #3CB043 !important;
+    color: #ffffff !important;
+    border-radius: 1.2rem !important;
+    font-weight: 600 !important;
+}
+
+.modelDetailPage .pillButtonGrey {
+    background-color: #6E6E6E !important;
+    border-color: #6E6E6E !important;
+    color: #ffffff !important;
+    border-radius: 1.2rem !important;
+}
+
+.modelDetailPage .detailActionRow {
+    flex-wrap: wrap !important;
+    row-gap: 0.5rem !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Responsive two-column form layout */
+.modelDetailPage .detailFormRow {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    width: 100% !important;
+    max-width: 1100px !important;
+    gap: 2rem 4rem !important;
+    box-sizing: border-box !important;
+}
+
+.modelDetailPage .detailFormCol {
+    width: 460px !important;
+    max-width: 100% !important;
+    flex: 0 1 460px !important;
+    box-sizing: border-box !important;
+}
+
+.modelDetailPage .detailFieldRow {
+    margin-bottom: 0.85rem !important;
+    flex-wrap: wrap !important;
+    width: 100% !important;
+}
+
+.modelDetailPage .detailFieldLabel,
+.modelDetailPage .detailFieldLabel .sapMLabel {
+    width: 130px !important;
+    min-width: 130px !important;
+    color: black !important;
+    font-weight: 400 !important;
+    font-size: 0.875rem !important;
+    margin-right: 0.75rem !important;
+    flex-shrink: 0 !important;
+}
+
+/* Kill the dashed underline UI5 puts on inputs */
+.modelDetailPage .sapMInputBase,
+.modelDetailPage .sapMInputBase .sapMInputBaseInner,
+.modelDetailPage .sapMInputBaseContentWrapper,
+.modelDetailPage .sapMInputBaseReadonly,
+.modelDetailPage .sapMInputBaseReadonly .sapMInputBaseInner,
+.modelDetailPage .sapMInputBaseReadonly .sapMInputBaseContentWrapper,
+.modelDetailPage .sapMSelect,
+.modelDetailPage .sapMDatePicker {
+    border-bottom: none !important;
+    box-shadow: none !important;
+}
+
+/* Uniform box look for text/select/date fields only */
+.modelDetailPage .detailInput:not(.detailRadioGroup),
+.modelDetailPage .detailInput:not(.detailRadioGroup) .sapMInputBaseContentWrapper,
+.modelDetailPage .detailInput.sapMSelect:not(.detailRadioGroup) {
+    border: 1px solid #c9c9c9 !important;
+    border-radius: 3px !important;
+    background-color: #ffffff !important;
+    height: 2.15rem !important;
+    min-height: 2.15rem !important;
+    box-sizing: border-box !important;
+}
+
+.modelDetailPage .detailInput:not(.detailRadioGroup),
+.modelDetailPage .detailFieldRow .detailInput:not(.detailRadioGroup),
+.modelDetailPage span.detailInput:not(.detailRadioGroup),
+.modelDetailPage div.detailInput:not(.detailRadioGroup) {
+    width: 320px !important;
+    max-width: 100% !important;
+    flex: 0 1 320px !important;
+    display: inline-flex !important;
+}
+
+/* Fallback: also force the inner content wrapper/field to fill that width,in case the outer control root is being sized by something else */
+.modelDetailPage .detailInput:not(.detailRadioGroup) .sapMInputBaseContentWrapper,
+.modelDetailPage .detailInput:not(.detailRadioGroup) .sapMInputBaseInner,
+.modelDetailPage .detailInput:not(.detailRadioGroup).sapMSelect {
+    width: 100% !important;
+    box-sizing: border-box !important;
+}
+
+/* Read-only fields get the light grey fill*/
+.modelDetailPage .sapMInputBaseReadonly,
+.modelDetailPage .sapMInputBaseReadonly .sapMInputBaseContentWrapper {
+    background-color: #ececec !important;
+    border: 1px solid #c9c9c9 !important;
+}
+
+.modelDetailPage .detailInput .sapMInputBaseInner {
+    font-size: 0.875rem !important;
+    color: #1a1a1a !important;
+}
+
+/* Radio group: no box, just inline text */
+.modelDetailPage .detailRadioGroup {
+    border: none !important;
+    background: transparent !important;
+    height: auto !important;
+    min-height: auto !important;
+}
+
+/* Date picker calendar icon */
+.modelDetailPage .sapMDatePicker .sapMInputBaseIconContainer {
+    background-color: #F0A500 !important;
+    border-radius: 3px !important;
+}
+
+/* Inline circular buttons next to Platform / Vehicle segment */
+.modelDetailPage .detailInlineIconBtn {
+    background: #6E6E6E !important;
+    border-radius: 50% !important;
+    width: 2rem !important;
+    height: 2rem !important;
+    min-width: 2rem !important;
+    flex-shrink: 0 !important;
+}
+
+.modelDetailPage .detailInlineIconBtn .sapMBtnIcon {
+    color: #ffffff !important;
+}
+
+/* Budget table header */
+.modelDetailPage #tblBudget .sapMListTblHeader,
+.modelDetailPage #tblBudget th {
+    font-weight: 700 !important;
+    color: #1a1a1a !important;
+}
+
+/*budget table scroll horizontally instead of squashing its 7 columns on small screens */
+.modelDetailPage #tblBudget {
+    overflow-x: auto !important;
+    display: block !important;
+    max-width: 100% !important;
+}
+
+/* Tablet breakpoint (~1024px and below) */
+@media (max-width: 1024px) {
+    .modelDetailPage .detailFormCol {
+        flex: 1 1 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* Mobile breakpoint (~600px and below) */
+@media (max-width: 600px) {
+    .modelDetailPage .detailTopBar {
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    /* Stack label above input instead of side-by-side */
+    .modelDetailPage .detailFieldRow {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+
+    .modelDetailPage .detailFieldLabel,
+    .modelDetailPage .detailFieldLabel .sapMLabel {
+        width: 100% !important;
+        margin-right: 0 !important;
+        margin-bottom: 0.25rem !important;
+    }
+
+    .modelDetailPage .detailInput:not(.detailRadioGroup) {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .modelDetailPage .detailActionRow {
+        justify-content: center !important;
+    }
+}
