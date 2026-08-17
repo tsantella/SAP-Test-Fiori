@@ -4,8 +4,10 @@ sap.ui.define([
     "sap/ui/core/Fragment",
     "sap/m/MessageToast",
     "sap/m/MessageBox",
+    "sap/ui/model/Filter",
+    "sap/ui/model/FilterOperator",
     "project1/service/util/MyCycles.service"
-], function(Controller, JSONModel, Fragment, MessageToast, MessageBox, MyCyclesService) {
+], function(Controller, JSONModel, Fragment, MessageToast, MessageBox, Filter, FilterOperator, MyCyclesService) {
     "use strict";
     return Controller.extend("project1.controller.MyCycles", {
 
@@ -240,16 +242,27 @@ sap.ui.define([
 
             var that = this;
 
+            // Local JSON model that the table + pagination/search logic reads from
             var oCyclesModel = new JSONModel({ Cycles: [] });
             this.getView().setModel(oCyclesModel, "cycles");
 
-            var sPath = sap.ui.require.toUrl("project1/model/cycles.json");
-            oCyclesModel.loadData(sPath);
+            // Read active (non-draft) Cycles from the CAP OData service
+            var oODataModel = this.getOwnerComponent().getModel(); // default "" model from manifest.json
+            var oListBinding = oODataModel.bindList("/Cycles", null, [], [
+                new Filter("IsActiveEntity", FilterOperator.EQ, true)
+            ]);
 
-            oCyclesModel.attachRequestCompleted(function() {
-                that._aAllCycles = oCyclesModel.getProperty("/Cycles");
-                that._aAllCyclesUnfiltered = that._aAllCycles;
+            oListBinding.requestContexts(0, 10000).then(function(aContexts) {
+                var aData = aContexts.map(function(oContext) {
+                    return oContext.getObject();
+                });
+
+                oCyclesModel.setProperty("/Cycles", aData);
+                that._aAllCycles = aData;
+                that._aAllCyclesUnfiltered = aData;
                 that._updatePage();
+            }).catch(function(oError) {
+                MessageBox.error("Failed to load cycles: " + oError.message);
             });
 
             var oPage = this.byId("MyCycles");

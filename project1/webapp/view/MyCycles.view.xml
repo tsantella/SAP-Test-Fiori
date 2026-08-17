@@ -100,8 +100,8 @@
 
                 <!-- Table -->
                 <Table id="tblCycles"
-                       inset="false"
-                       items="{cycles>/Cycles}">
+                    inset="false"
+                    items="{cycles>/Cycles}">
                     <columns>
                         <Column id="_IDGenColumn2"><Text id="_IDGenText1" text="Creator" /></Column>
                         <Column id="_IDGenColumn3"><Text id="_IDGenText2" text="Title" /></Column>
@@ -111,10 +111,10 @@
                     <items>
                         <ColumnListItem id="_IDGenColumnListItem" type="Active" press="onRowPress">
                             <cells>
-                                <Text id="_IDGenText5" text="{cycles>Creator}" />
-                                <Text id="_IDGenText6" text="{cycles>Title}" />
-                                <Text id="_IDGenText7" text="{cycles>CycleStatus}" />
-                                <Text id="_IDGenText8" text="{cycles>UploadStatus}" />
+                                <Text id="_IDGenText5" text="{cycles>creator}" />
+                                <Text id="_IDGenText6" text="{cycles>title}" />
+                                <Text id="_IDGenText7" text="{cycles>cycleStatus}" />
+                                <Text id="_IDGenText8" text="{cycles>uploadStatus}" />
                             </cells>
                         </ColumnListItem>
                     </items>

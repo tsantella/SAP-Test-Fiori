@@ -25,8 +25,8 @@
                 <VBox id="detailCard" class="cycleDetailCard">
 
                     <!-- Title row -->
-                    <Text id="_IDGenTitleText" text="{selectedCycle>/Title}" class="cycleDetailTitle"/>
-                    <Text id="_IDGenCreatorText" text="Created by {selectedCycle>/Creator}" class="cycleDetailSubtitle sapUiTinyMarginBottom"/>
+                    <Text id="_IDGenTitleText" text="{selectedCycle>/title}" class="cycleDetailTitle"/>
+                    <Text id="_IDGenCreatorText" text="Created by {selectedCycle>/creator}" class="cycleDetailSubtitle sapUiTinyMarginBottom"/>
 
                     <!-- Divider -->
                     <core:HTML id="_IDGenDivider" content="&lt;hr class=&quot;cycleDivider&quot;/&gt;"/>
@@ -37,23 +37,23 @@
                         <VBox id="_IDGenCycleStatusBox" class="cycleDetailField">
                             <Text id="_IDGenLabelCycle" text="CYCLE STATUS" class="cycleFieldLabel"/>
                             <ObjectStatus id="_IDGenStatusCycle"
-                                          text="{selectedCycle>/CycleStatus}"
-                                          state="{
-                                              path: 'selectedCycle>/CycleStatus',
-                                              formatter: '.formatCycleStatusState'
-                                          }"
-                                          class="sapUiTinyMarginTop"/>
+                                text="{selectedCycle>/cycleStatus}"
+                                state="{
+                                    path: 'selectedCycle>/cycleStatus',
+                                    formatter: '.formatCycleStatusState'
+                                }"
+                                class="sapUiTinyMarginTop"/>
                         </VBox>
 
                         <VBox id="_IDGenUploadStatusBox" class="cycleDetailField">
                             <Text id="_IDGenLabelUpload" text="UPLOAD STATUS" class="cycleFieldLabel"/>
                             <ObjectStatus id="_IDGenStatusUpload"
-                                          text="{selectedCycle>/UploadStatus}"
-                                          state="{
-                                              path: 'selectedCycle>/UploadStatus',
-                                              formatter: '.formatUploadStatusState'
-                                          }"
-                                          class="sapUiTinyMarginTop"/>
+                            text="{selectedCycle>/uploadStatus}"
+                            state="{
+                                path: 'selectedCycle>/uploadStatus',
+                                formatter: '.formatUploadStatusState'
+                            }"
+                            class="sapUiTinyMarginTop"/>
                         </VBox>
 
                     </HBox>

@@ -33,7 +33,7 @@ sap.ui.define([], function() {
             }
             var sLower = sQuery.toLowerCase();
             return aAllCycles.filter(function(oCycle) {
-                return (oCycle.Creator || "").toLowerCase().includes(sLower);
+                return (oCycle.creator || "").toLowerCase().includes(sLower);
             });
         },
 
@@ -70,7 +70,7 @@ sap.ui.define([], function() {
          * Business rule: a cycle can only be "stopped" while WorkInProgress.
          */
         isCycleStoppable: function(oCycleData) {
-            return !!oCycleData && oCycleData.CycleStatus === "WorkInProgress";
+            return !!oCycleData && oCycleData.cycleStatus === "WorkInProgress";
         },
 
         // ===================== Excel import validation =====================
