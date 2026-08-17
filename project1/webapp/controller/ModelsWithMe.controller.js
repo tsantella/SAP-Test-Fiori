@@ -26,14 +26,18 @@ sap.ui.define([
                  that._rebuildDropdownOptions();
               });
 
-            var oDefaultsModel = new JSONModel();
-            var sDefaultsPath = sap.ui.require.toUrl("project1/model/modeldetail.json");
-            oDefaultsModel.loadData(sDefaultsPath);
-            oDefaultsModel.attachRequestCompleted(function () {
-                that._oBlankModelTemplate = oDefaultsModel.getProperty("/BlankModel") || {};
-                that._aMockBudgetRows = oDefaultsModel.getProperty("/MockBudgetRows") || [];
-            });
-
+            this._pDefaultsLoaded = new Promise(function (resolve) {
+                var oDefaultsModel = new JSONModel();
+                var sDefaultsPath = sap.ui.require.toUrl("project1/model/modeldetail.json");
+                oDefaultsModel.loadData(sDefaultsPath);
+                oDefaultsModel.attachRequestCompleted(function () {
+                    that._oBlankModelTemplate = oDefaultsModel.getProperty("/BlankModel") || {};
+                    that._aMockBudgetRows = oDefaultsModel.getProperty("/MockBudgetRows") || [];
+                    that._aYears = oDefaultsModel.getProperty("/Years") || [];
+                    that._sDefaultStatus = oDefaultsModel.getProperty("/DefaultStatus") || "";
+                    resolve();
+                });
+            }.bind(this));
             // Listen for saves coming back from the detail (Edit/New) screen
             EventBus.getInstance().subscribe("app", "modelSaved", this._onModelSaved, this);
 
@@ -66,11 +70,13 @@ sap.ui.define([
                     });
 
                     if (bIsRowClick) {
-                        that._openModelDetail("view");
-                     }
-                  }
-              });
-          },
+                        that._pDefaultsLoaded.then(function () {
+                            that._openModelDetail("view");
+                        });
+                    }
+                }
+            });
+        },
 
         onExit: function () {
             EventBus.getInstance().unsubscribe("app", "modelSaved", this._onModelSaved, this);
@@ -93,13 +99,19 @@ sap.ui.define([
 
         onEdit: function () {
             if (this._oSelectedContext) {
-                this._openModelDetail("edit");
+                var that = this;
+                this._pDefaultsLoaded.then(function () {
+                    that._openModelDetail("edit");
+                });
             }
         },
 
         onNew: function () {
             this._oSelectedContext = null;
-            this._openModelDetail("new");
+            var that = this;
+            this._pDefaultsLoaded.then(function () {
+                that._openModelDetail("new");
+            });
         },
 
         _openModelDetail: function (sMode) {
@@ -147,7 +159,7 @@ sap.ui.define([
         },
 
         _getBlankBudgetRows: function () {
-            var aYears = ["2026", "2027", "2028", "2029", "2030", "2031", "2032", "2033", "2034", "2035"];
+            var aYears = this._aYears || [];
             return aYears.map(function (sYear) {
                 return { Year: sYear, Budget: "", LastFC: "", NewFC: "", LastIV: "", NewIV: "", BudgetView: "" };
             });
@@ -177,8 +189,8 @@ sap.ui.define([
             this._rebuildDropdownOptions();
         },
 
-        _populateDerivedFields: function (oRecord) {
-            var sStatus = oRecord.Status || oRecord.ModelStatus || "ACTIVE";
+       _populateDerivedFields: function (oRecord) {
+            var sStatus = oRecord.Status || oRecord.ModelStatus || this._sDefaultStatus;
             oRecord.Status = sStatus;
             oRecord.ModelStatus = sStatus;
             oRecord.OEGroupNr = oRecord.OEGroupNr || this._lookupOrAssignNr("OEGroup", "OEGroupNr", oRecord.OEGroup);
