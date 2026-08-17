@@ -1,8 +1,9 @@
 sap.ui.define([
       "sap/ui/core/mvc/Controller",
       "sap/ui/model/json/JSONModel",
-      "sap/m/MessageToast"
-  ], function (Controller, JSONModel, MessageToast) {
+      "sap/m/MessageToast",
+      "sap/ui/core/EventBus"
+], function (Controller, JSONModel, MessageToast,EventBus) {
       "use strict";
       return Controller.extend("project1.controller.ModelsWithMe", {
 
@@ -22,7 +23,11 @@ sap.ui.define([
               oModelsModel.attachRequestCompleted(function () {
                   that._aAllModels = oModelsModel.getProperty("/Models");
                   that._updatePage();
+                 that._rebuildDropdownOptions();
               });
+
+            // Listen for saves coming back from the detail (Edit/New) screen
+            EventBus.getInstance().subscribe("app", "modelSaved", this._onModelSaved, this);
 
               // Click outside the table deselects the current row
               var oPage = this.byId("ModelsWithMe");
@@ -42,9 +47,26 @@ sap.ui.define([
                       if (!bIsRowClick) {
                           that._clearSelection();
                       }
+                },
+
+                // Double-click ONLY opens the record for viewing (read-only)
+                ondblclick: function (oEvent) {
+                    var oTable = that.byId("tblModels");
+
+                    var bIsRowClick = oTable.getItems().some(function (row) {
+                        return row.getDomRef() && row.getDomRef().contains(oEvent.target);
+                    });
+
+                    if (bIsRowClick) {
+                        that._openModelDetail("view");
+                     }
                   }
               });
           },
+
+        onExit: function () {
+            EventBus.getInstance().unsubscribe("app", "modelSaved", this._onModelSaved, this);
+        },
 
           onRowPress: function (oEvent) {
               var oItem = oEvent.getSource();
@@ -61,6 +83,187 @@ sap.ui.define([
               this.byId("btnModelsDelete").setEnabled(true);
           },
 
+        onEdit: function () {
+            if (this._oSelectedContext) {
+                this._openModelDetail("edit");
+            }
+        },
+
+        onNew: function () {
+            this._oSelectedContext = null;
+            this._openModelDetail("new");
+        },
+
+        _openModelDetail: function (sMode) {
+            var oSelectedData;
+
+            if (sMode === "new") {
+                oSelectedData = this._createBlankModel();
+            } else {
+                if (!this._oSelectedContext) {
+                    return;
+                }
+                oSelectedData = JSON.parse(JSON.stringify(this._oSelectedContext.getObject()));
+
+                oSelectedData.BudgetRows = this._getMockBudgetRows();
+            }
+
+            oSelectedData._mode = sMode;
+            oSelectedData._originalKey = oSelectedData.ModelVersion;
+
+            var oComponent = this.getOwnerComponent();
+            var oSelectedModel = oComponent.getModel("selectedModel");
+
+            if (!oSelectedModel) {
+                oSelectedModel = new JSONModel();
+                oComponent.setModel(oSelectedModel, "selectedModel");
+            }
+            oSelectedModel.setData(oSelectedData);
+
+            var oRouter = this.getOwnerComponent().getRouter();
+            this._clearSelection();
+            oRouter.navTo("RouteModelDetail");
+        },
+
+        _createBlankModel: function () {
+            return {
+                Status: "ACTIVE",
+                ModelStatus: "ACTIVE",
+                ModelVersion: "",
+                Model: "",
+                OEGroup: "",
+                OEGroupNr: "",
+                Brand: "",
+                BrandNr: "",
+                SubGroup: "",
+                Region: "",
+                Country: "",
+                PropulsionType: "",
+                Platform: "",
+                PlatformNr: "",
+                VehicleSegment: "",
+                DevelopmentCode: "",
+                SOP: null,
+                EOP: null,
+                BudgetRows: this._getBlankBudgetRows()
+            };
+        },
+
+        _getMockBudgetRows: function () {
+            return [
+                { Year: "2026", Budget: "0",     LastFC: "0",     NewFC: "0",     LastIV: "0",     NewIV: "0",     BudgetView: "" },
+                { Year: "2027", Budget: "0",     LastFC: "0",     NewFC: "0",     LastIV: "0",     NewIV: "0",     BudgetView: "" },
+                { Year: "2028", Budget: "3,174", LastFC: "3,174", NewFC: "3,174", LastIV: "3,174", NewIV: "3,174", BudgetView: "" },
+                { Year: "2029", Budget: "4,000", LastFC: "",      NewFC: "4,000", LastIV: "",      NewIV: "",      BudgetView: "" },
+                { Year: "2030", Budget: "4,500", LastFC: "",      NewFC: "4,500", LastIV: "",      NewIV: "",      BudgetView: "" },
+                { Year: "2031", Budget: "4,537", LastFC: "",      NewFC: "4,537", LastIV: "",      NewIV: "",      BudgetView: "" },
+                { Year: "2032", Budget: "",      LastFC: "",      NewFC: "4,500", LastIV: "",      NewIV: "",      BudgetView: "4,500" },
+                { Year: "2033", Budget: "",      LastFC: "",      NewFC: "4,500", LastIV: "",      NewIV: "",      BudgetView: "4,500" },
+                { Year: "2034", Budget: "",      LastFC: "",      NewFC: "4,586", LastIV: "",      NewIV: "",      BudgetView: "4,586" },
+                { Year: "2035", Budget: "",      LastFC: "",      NewFC: "5,061", LastIV: "",      NewIV: "",      BudgetView: "5,061" }
+            ];
+        },
+
+        _getBlankBudgetRows: function () {
+            var aYears = ["2026", "2027", "2028", "2029", "2030", "2031", "2032", "2033", "2034", "2035"];
+            return aYears.map(function (sYear) {
+                return { Year: sYear, Budget: "", LastFC: "", NewFC: "", LastIV: "", NewIV: "", BudgetView: "" };
+            });
+        },
+
+        _onModelSaved: function (sChannel, sEvent, oData) {
+            if (!this._aAllModels) {
+                this._aAllModels = [];
+            }
+
+            var oRecord = this._populateDerivedFields(oData.record);
+
+            if (oData.mode === "edit") {
+                var iIndex = this._aAllModels.findIndex(function (oModel) {
+                    return oModel.ModelVersion === oData.originalKey;
+                });
+                if (iIndex > -1) {
+                    this._aAllModels[iIndex] = oRecord;
+                } else {
+                    this._aAllModels.push(oRecord);
+                }
+            } else if (oData.mode === "new") {
+                this._aAllModels.push(oRecord);
+            }
+
+            this._updatePage();
+            this._rebuildDropdownOptions();
+        },
+
+        _populateDerivedFields: function (oRecord) {
+            var sStatus = oRecord.Status || oRecord.ModelStatus || "ACTIVE";
+            oRecord.Status = sStatus;
+            oRecord.ModelStatus = sStatus;
+            oRecord.OEGroupNr = oRecord.OEGroupNr || this._lookupOrAssignNr("OEGroup", "OEGroupNr", oRecord.OEGroup);
+            oRecord.BrandNr = oRecord.BrandNr || this._lookupOrAssignNr("Brand", "BrandNr", oRecord.Brand);
+            oRecord.PlatformNr = oRecord.PlatformNr || this._lookupOrAssignNr("Platform", "PlatformNr", oRecord.Platform);
+            return oRecord;
+        },
+
+        _lookupOrAssignNr: function (sValueField, sNrField, sValue) {
+            if (!sValue) {
+                return "";
+            }
+
+            var aModels = this._aAllModels || [];
+
+            var oExisting = aModels.find(function (oModel) {
+                return oModel[sValueField] === sValue
+                    && oModel[sNrField] !== undefined
+                    && oModel[sNrField] !== null
+                    && oModel[sNrField] !== "";
+            });
+
+            if (oExisting) {
+                return oExisting[sNrField];
+            }
+
+            var iMax = 0;
+            aModels.forEach(function (oModel) {
+                var iNr = parseInt(oModel[sNrField], 10);
+                if (!isNaN(iNr) && iNr > iMax) {
+                    iMax = iNr;
+                }
+            });
+
+            return String(iMax + 1);
+        },
+
+        _rebuildDropdownOptions: function () {
+            var oComponent = this.getOwnerComponent();
+            var oDropdownModel = oComponent.getModel("dropdowns");
+
+            if (!oDropdownModel) {
+                oDropdownModel = new JSONModel();
+                oComponent.setModel(oDropdownModel, "dropdowns");
+            }
+
+            var aModels = this._aAllModels || [];
+
+            function uniqueSorted(sField) {
+                var aSeen = [];
+                aModels.forEach(function (oModel) {
+                    var sValue = oModel[sField];
+                    if (sValue !== undefined && sValue !== null && sValue !== "" && aSeen.indexOf(sValue) === -1) {
+                        aSeen.push(sValue);
+                    }
+                });
+                return aSeen.sort();
+            }
+
+            oDropdownModel.setData({
+                Brands: uniqueSorted("Brand"),
+                SubGroups: uniqueSorted("SubGroup"),
+                PropulsionTypes: uniqueSorted("PropulsionType"),
+                Platforms: uniqueSorted("Platform")
+            });
+          },
+
           _clearSelection: function () {
               var oTable = this.byId("tblModels");
               oTable.getItems().forEach(function (row) {
@@ -71,18 +274,12 @@ sap.ui.define([
               this.byId("btnModelsDelete").setEnabled(false);
           },
 
-          // ===================== Toolbar button stubs =====================
-
           onSearch: function () { MessageToast.show("Search button clicked!"); },
-          onNew: function () { MessageToast.show("New button clicked!"); },
-          onEdit: function () { MessageToast.show("Edit not implemented yet."); },
           onSendMultiple: function () { MessageToast.show("Send Multiple Models not implemented yet."); },
           onSendAll: function () { MessageToast.show("Send All Models not implemented yet."); },
           onImport: function () { MessageToast.show("Import not implemented yet."); },
           onExportExcel: function () { MessageToast.show("Export to Excel not implemented yet."); },
           onDelete: function () { MessageToast.show("Delete not implemented yet."); },
-
-          // ===================== Pagination =====================
 
           onFirstPage: function () {
               this._iCurrentPage = 1;
