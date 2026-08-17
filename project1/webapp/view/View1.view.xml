@@ -4,6 +4,7 @@
     <Page id="page" title="{i18n>title}">
         <content>
             <Button id="_IDGenButton" text="Go to My Cycles" press="onNavToMyCycles" />
+            <!-- test -->
             </content>
     </Page>
 </mvc:View>
