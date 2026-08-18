@@ -13,6 +13,17 @@ sap.ui.define([
               this._iPageSize = 10;
               this._iCurrentPage = 1;
 
+              // The FLP shell wraps every screen in a width-limited "Cozy" container
+              // by default (a fixed max width, centered with side margins). That's
+              // shared across the whole app, so we can't fix it with CSS scoped to
+              // this screen alone - SAP's own shell JS actively reapplies it. Instead,
+              // toggle the shell's class only while THIS screen is showing: remove it
+              // when we arrive here, restore it the moment any other route is matched
+              // (i.e. when navigating away), so My Cycles keeps its normal layout.
+              var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+              oRouter.getRoute("RouteModelsWithMe").attachPatternMatched(this._onModelsWithMeMatched, this);
+              oRouter.attachRouteMatched(this._onAnyRouteMatched, this);
+
               // The "models" model only ever holds the CURRENT page's slice
               var oModelsModel = new JSONModel({ Models: [] });
               this.getView().setModel(oModelsModel, "models");
@@ -65,6 +76,28 @@ sap.ui.define([
                       }
                   }
               });
+          },
+
+          // Fires every time navigation lands on RouteModelsWithMe (unlike onInit,
+          // this runs on every visit, not just the first). Removes the shell's
+          // width-limiting class so this screen renders edge-to-edge.
+          _onModelsWithMeMatched: function () {
+              var oShellContainer = document.querySelector(".sapUShellApplicationContainer");
+              if (oShellContainer) {
+                  oShellContainer.classList.remove("sapUShellApplicationContainerLimitedWidth");
+              }
+          },
+
+          // Fires on EVERY route match app-wide. Restores the shell's normal
+          // width-limited layout as soon as the user navigates to any screen
+          // other than this one, so My Cycles (and everything else) is unaffected.
+          _onAnyRouteMatched: function (oEvent) {
+              if (oEvent.getParameter("name") !== "RouteModelsWithMe") {
+                  var oShellContainer = document.querySelector(".sapUShellApplicationContainer");
+                  if (oShellContainer) {
+                      oShellContainer.classList.add("sapUShellApplicationContainerLimitedWidth");
+                  }
+              }
           },
 
           // Fires when a table row is clicked (bound via press="onRowPress" in the view).
