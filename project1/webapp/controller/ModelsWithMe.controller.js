@@ -1,8 +1,9 @@
 sap.ui.define([
       "sap/ui/core/mvc/Controller",
       "sap/ui/model/json/JSONModel",
-      "sap/m/MessageToast"
-  ], function (Controller, JSONModel, MessageToast) {
+      "sap/m/MessageToast",
+      "sap/m/MessageBox"
+  ], function (Controller, JSONModel, MessageToast, MessageBox) {
       "use strict";
       return Controller.extend("project1.controller.ModelsWithMe", {
 
@@ -166,26 +167,33 @@ sap.ui.define([
               this._applySearchFilter(sQuery);
           },
 
-          // Rebuilds _aFilteredModels from _aAllModels based on whether the query
-          // appears anywhere in ANY field of a row - case-insensitive substring
-          // match, checked across every column via Object.keys(oModel) so it stays
-          // in sync automatically if fields are ever added/removed from the JSON.
-          // Always resets back to page 1 and re-renders after a change.
-          _applySearchFilter: function (sQuery) {
+          // Returns the subset of _aAllModels matching the query - case-insensitive
+          // substring match, checked across every column via Object.keys(oModel) so
+          // it stays in sync automatically if fields are ever added/removed from the
+          // JSON. Pure function (doesn't touch _aFilteredModels/page/table itself) so
+          // both live search and delete can reuse the same matching logic.
+          _getFilteredModels: function (sQuery) {
               var sQueryLower = (sQuery || "").trim().toLowerCase();
 
               if (!sQueryLower) {
-                  this._aFilteredModels = this._aAllModels.slice();
-              } else {
-                  this._aFilteredModels = this._aAllModels.filter(function (oModel) {
-                      return Object.keys(oModel).some(function (sKey) {
-                          var vValue = oModel[sKey];
-                          return vValue !== null && vValue !== undefined &&
-                              String(vValue).toLowerCase().indexOf(sQueryLower) !== -1;
-                      });
-                  });
+                  return this._aAllModels.slice();
               }
 
+              return this._aAllModels.filter(function (oModel) {
+                  return Object.keys(oModel).some(function (sKey) {
+                      var vValue = oModel[sKey];
+                      return vValue !== null && vValue !== undefined &&
+                          String(vValue).toLowerCase().indexOf(sQueryLower) !== -1;
+                  });
+              });
+          },
+
+          // Rebuilds _aFilteredModels from the query, always resetting back to page 1
+          // and re-rendering - used for live search, where jumping to page 1 on every
+          // keystroke is the expected behavior (unlike delete, which preserves the
+          // current page - see _deleteSelectedModel).
+          _applySearchFilter: function (sQuery) {
+              this._aFilteredModels = this._getFilteredModels(sQuery);
               this._iCurrentPage = 1;
               this._updatePage();
           },
@@ -196,7 +204,53 @@ sap.ui.define([
           onSendAll: function () { MessageToast.show("Send All Models not implemented yet."); },
           onImport: function () { MessageToast.show("Import not implemented yet."); },
           onExportExcel: function () { MessageToast.show("Export to Excel not implemented yet."); },
-          onDelete: function () { MessageToast.show("Delete not implemented yet."); },
+
+          
+          // Fires when the Delete button is pressed. Confirms with the user before
+          // actually removing anything. Note: UI5's MessageBox.Action enum has no
+          // built-in DELETE constant (only OK/CANCEL/YES/NO/RETRY/IGNORE/ABORT/CLOSE),
+          // so a custom "Delete" string label is used for the affirmative action -
+          // same pattern your fellow dev used for her Save confirmation.
+          onDelete: function () {
+              if (!this._oSelectedContext) return;
+
+              var oSelectedData = this._oSelectedContext.getObject();
+              MessageBox.confirm(
+                  "Are you sure you want to delete \"" + oSelectedData.Model + "\"?",
+                  {
+                      title: "Delete Model",
+                      actions: ["Delete", MessageBox.Action.CANCEL],
+                      emphasizedAction: "Delete",
+                      onClose: (sAction) => {
+                          if (sAction === "Delete") this._deleteSelectedModel();
+                      }
+                  }
+              );
+          },
+
+          // Removes the selected model from both _aAllModels (source of truth) and
+          // _aFilteredModels (keeps search results in sync if one's active), then
+          // preserves the current page unless it was the last row on the last page.
+          _deleteSelectedModel: function () {
+              var oSelectedData = this._oSelectedContext.getObject();
+
+              var iAllIndex = this._aAllModels.indexOf(oSelectedData);
+              if (iAllIndex > -1) {
+                  this._aAllModels.splice(iAllIndex, 1);
+              }
+
+              var sCurrentQuery = this.byId("sfModelsSearch").getValue();
+              this._aFilteredModels = this._getFilteredModels(sCurrentQuery);
+
+              var iTotalPages = this._getTotalPages();
+              if (this._iCurrentPage > iTotalPages) {
+                  this._iCurrentPage = iTotalPages;
+              }
+
+              this._clearSelection();
+              this._updatePage();
+              MessageToast.show("Model deleted!");
+          },
 
           // ===================== Pagination =====================
           // Design: this._aAllModels always holds the FULL dataset (all rows from
