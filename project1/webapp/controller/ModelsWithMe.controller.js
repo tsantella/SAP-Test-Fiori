@@ -21,10 +21,12 @@ sap.ui.define([
               oModelsModel.loadData(sPath);
 
               // loadData() above is async, so this runs once modelsWithMe.json has
-              // actually finished loading. Stores the full dataset (used for
-              // pagination math) and renders the first page of it into the table.
+              // actually finished loading. Stores the full dataset, initializes the
+              // filtered working set to match it (no search applied yet - pagination
+              // reads from _aFilteredModels, not _aAllModels), and renders the first page.
               oModelsModel.attachRequestCompleted(() => {
                   this._aAllModels = oModelsModel.getProperty("/Models");
+                  this._aFilteredModels = this._aAllModels.slice();
                   this._updatePage();
               });
 
@@ -47,6 +49,19 @@ sap.ui.define([
 
                       if (!bIsRowClick) {
                           this._clearSelection();
+                      }
+                  }
+              });
+
+              // Auto-collapse the search field back into the Search button once it
+              // loses focus, but only if it's empty - if there's still a query typed,
+              // keep it open so the filtered results stay visible.
+              var oSearchField = this.byId("sfModelsSearch");
+              oSearchField.addEventDelegate({
+                  onsapfocusleave: () => {
+                      if (!oSearchField.getValue()) {
+                          this.byId("btnModelsSearch").setVisible(true);
+                          oSearchField.setVisible(false);
                       }
                   }
               });
@@ -86,7 +101,62 @@ sap.ui.define([
           // press event in the view so the app doesn't error out. Replace the
           // MessageToast.show(...) call with real behavior as each feature gets built.
 
-          onSearch: function () { MessageToast.show("Search button clicked!"); },
+          // Fires when the Search button is pressed. Swaps the button out for the
+          // SearchField (only one is visible at a time). Opening focuses the field
+          // so the user can type right away; closing clears whatever was typed and
+          // resets the table back to showing everything.
+          onSearch: function () {
+              var oSearchField = this.byId("sfModelsSearch");
+              var oSearchButton = this.byId("btnModelsSearch");
+              var bVisible = !oSearchField.getVisible();
+
+              oSearchField.setVisible(bVisible);
+              oSearchButton.setVisible(!bVisible);
+
+              if (bVisible) {
+                  // setVisible() doesn't update the DOM synchronously - UI5 batches
+                  // rendering - so focusing immediately would target a not-yet-visible
+                  // element and silently fail. Deferring with setTimeout(0) runs this
+                  // right after the pending render completes.
+                  setTimeout(() => oSearchField.focus(), 0);
+              } else {
+                  oSearchField.setValue("");
+                  this._applySearchFilter("");
+              }
+          },
+
+          // Fires on every keystroke in the search field (bound via liveChange in
+          // the view - not "search", which would only fire on Enter). Reads what's
+          // currently typed and re-filters the table from it.
+          onSearchLiveChange: function (oEvent) {
+              var sQuery = oEvent.getParameter("newValue");
+              this._applySearchFilter(sQuery);
+          },
+
+          // Rebuilds _aFilteredModels from _aAllModels based on whether the query
+          // appears anywhere in ANY field of a row - case-insensitive substring
+          // match, checked across every column via Object.keys(oModel) so it stays
+          // in sync automatically if fields are ever added/removed from the JSON.
+          // Always resets back to page 1 and re-renders after a change.
+          _applySearchFilter: function (sQuery) {
+              var sQueryLower = (sQuery || "").trim().toLowerCase();
+
+              if (!sQueryLower) {
+                  this._aFilteredModels = this._aAllModels.slice();
+              } else {
+                  this._aFilteredModels = this._aAllModels.filter(function (oModel) {
+                      return Object.keys(oModel).some(function (sKey) {
+                          var vValue = oModel[sKey];
+                          return vValue !== null && vValue !== undefined &&
+                              String(vValue).toLowerCase().indexOf(sQueryLower) !== -1;
+                      });
+                  });
+              }
+
+              this._iCurrentPage = 1;
+              this._updatePage();
+          },
+
           onNew: function () { MessageToast.show("New button clicked!"); },
           onEdit: function () { MessageToast.show("Edit not implemented yet."); },
           onSendMultiple: function () { MessageToast.show("Send Multiple Models not implemented yet."); },
@@ -131,22 +201,23 @@ sap.ui.define([
               this._updatePage();
           },
 
-          // How many pages exist for the full dataset, given the current page size.
+          // How many pages exist for the CURRENT filtered set (all rows when no
+          // search is active, a subset once one is), given the current page size.
           // Always at least 1, even when there's no data, so pagination math never divides by zero.
           _getTotalPages: function () {
-              return Math.max(1, Math.ceil(this._aAllModels.length / this._iPageSize));
+              return Math.max(1, Math.ceil(this._aFilteredModels.length / this._iPageSize));
           },
 
-          // Recomputes which slice of this._aAllModels belongs on the current page,
-          // pushes it into the "models" model (which re-renders the table), updates
-          // the "X to Y of Z" text, and enables/disables the pagination buttons
-          // depending on whether we're at the first/last page.
+          // Recomputes which slice of this._aFilteredModels belongs on the current
+          // page, pushes it into the "models" model (which re-renders the table),
+          // updates the "X to Y of Z" text, and enables/disables the pagination
+          // buttons depending on whether we're at the first/last page.
           _updatePage: function () {
-              var iTotal = this._aAllModels.length;
+              var iTotal = this._aFilteredModels.length;
               var iTotalPages = this._getTotalPages();
               var iStart = (this._iCurrentPage - 1) * this._iPageSize;
               var iEnd = Math.min(iStart + this._iPageSize, iTotal);
-              var aPageData = this._aAllModels.slice(iStart, iEnd);
+              var aPageData = this._aFilteredModels.slice(iStart, iEnd);
 
               this.getView().getModel("models").setProperty("/Models", aPageData);
 

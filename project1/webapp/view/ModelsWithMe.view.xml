@@ -29,6 +29,7 @@
                   <!-- Action Buttons -->
                   <Toolbar id="modelsTbHeader" class="sapUiSmallMarginBottom">
                       <Button id="btnModelsSearch" text="Search" icon="sap-icon://search" press="onSearch" class="pillButton pillButtonGrey"/>
+                      <SearchField id="sfModelsSearch" width="16rem" visible="false" liveChange="onSearchLiveChange" placeholder="Search..." class="sapUiTinyMarginBegin"/>
                       <Button id="btnModelsNew" text="New" icon="sap-icon://document-text" press="onNew" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
                       <Button id="btnModelsEdit" text="Edit" icon="sap-icon://edit" press="onEdit" enabled="false" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
                       <Button id="btnSendMultiple" text="Send Multiple Models" icon="sap-icon://email" press="onSendMultiple" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>      
