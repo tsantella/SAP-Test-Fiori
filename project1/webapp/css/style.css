@@ -143,6 +143,14 @@ tr.sapMListTblRow.rowSelected td {
     margin-bottom: 12px;
 }
 
+/* Lets the Models with me table fill wide screens (width:100% in the view)
+   while still enforcing a readable minimum on narrow ones, where the
+   surrounding ScrollContainer takes over with horizontal scroll instead
+   of squeezing all 14 columns down to unreadable widths. */
+.modelsTableMinWidth {
+    min-width: 1400px;
+}
+
 .cycleFieldLabel {
     font-size: 0.72rem;
     font-weight: 600;
