@@ -1,0 +1,92 @@
+<mvc:View controllerName="project1.controller.ModelsWithMe"
+      xmlns:mvc="sap.ui.core.mvc"
+      xmlns="sap.m">
+
+      <Page id="ModelsWithMe" showHeader="false" class="modelsWithMePage">
+          <content>
+              <VBox id="_IDGenModelsVBox">
+
+                  <!-- Title header, reusing the same badge style as MyCycles/CycleModel -->
+                  <HBox id="modelsTitleHeaderBox" class="myCycleHeaderWrapper" alignItems="Center">
+                      <FlexBox id="modelsTitleBadge" class="myCycleBadge" alignItems="Center" justifyContent="Center">
+                          <Text id="modelsTitleBadgeText" text="Models with me" class="myCycleBadgeText"/>
+                      </FlexBox>
+                  </HBox>
+
+                  <!-- Tab strip: only the first tab is functional for now -->
+                  <IconTabBar id="modelsTabBar" selectedKey="modelsWithMe">
+                      <items>
+                          <IconTabFilter id="tabModelsWithMe1" key="modelsWithMe" text="Models with me"/>
+                          <IconTabFilter id="tabModelsWithMe2" key="placeholder1" text="Models with me" enabled="false"/>
+                          <IconTabFilter id="tabModelsWithMe3" key="placeholder2" text="Models with me" enabled="false"/>
+                          <IconTabFilter id="tabMultipleAccess" key="placeholder3" text="Models with me (multiple access)" enabled="false"/>
+                          <IconTabFilter id="tabAllOfMyModels" key="placeholder4" text="All of my models" enabled="false"/>
+                          <IconTabFilter id="tabRequests" key="placeholder5" text="Requests" enabled="false"/>
+                          <IconTabFilter id="tabDeadline" key="placeholder6" text="Deadline" enabled="false"/>
+                      </items>
+                  </IconTabBar>
+
+                  <!-- Action Buttons -->
+                  <Toolbar id="modelsTbHeader" class="sapUiSmallMarginBottom">
+                      <Button id="btnModelsSearch" text="Search" icon="sap-icon://search" press="onSearch" class="pillButton pillButtonGrey"/>
+                      <Button id="btnModelsNew" text="New" icon="sap-icon://document-text" press="onNew" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
+                      <Button id="btnModelsEdit" text="Edit" icon="sap-icon://edit" press="onEdit" enabled="false" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
+                      <Button id="btnSendMultiple" text="Send Multiple Models" icon="sap-icon://email" press="onSendMultiple" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>      
+                      <Button id="btnSendAll" text="Send All Models" icon="sap-icon://email" press="onSendAll" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
+                      <Button id="btnImport" text="Import" icon="sap-icon://upload" press="onImport" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
+                      <Button id="btnExportExcel" text="Export to Excel" icon="sap-icon://download" press="onExportExcel" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
+                      <Button id="btnModelsDelete" text="Delete" icon="sap-icon://delete" press="onDelete" enabled="false" type="Reject" class="pillButton sapUiTinyMarginBegin"/>
+
+                      <ToolbarSpacer id="_IDGenModelsToolbarSpacer"/>
+
+                      <!-- Pagination -->
+                      <Button id="btnModelsFirstPage" icon="sap-icon://media-rewind" type="Transparent" press="onFirstPage" enabled="false" tooltip="First Page"/>
+                      <Button id="btnModelsPreviousPage" icon="sap-icon://slim-arrow-left" type="Transparent" press="onPreviousPage" enabled="false" tooltip="Previous Page"/>
+                      <Text id="txtModelsPaginationInfo" text="0 to 0 of 0" class="sapUiTinyMarginBeginEnd"/>
+                      <Button id="btnModelsNextPage" icon="sap-icon://slim-arrow-right" type="Transparent" press="onNextPage" enabled="false" tooltip="Next Page"/>
+                      <Button id="btnModelsLastPage" icon="sap-icon://media-forward" type="Transparent" press="onLastPage" enabled="false" tooltip="Last Page"/>
+                  </Toolbar>
+
+                  <!-- Table -->
+                  <Table id="tblModels" inset="false" items="{models>/Models}">
+                      <columns>
+                          <Column id="_IDGenColModelStatus"><Text id="_IDGenTxtColModelStatus" text="Model Status"/></Column>
+                          <Column id="_IDGenColOEGroupNr"><Text id="_IDGenTxtColOEGroupNr" text="OE grp Nr"/></Column>
+                          <Column id="_IDGenColOEGroup"><Text id="_IDGenTxtColOEGroup" text="OE Group"/></Column>
+                          <Column id="_IDGenColBrandNr"><Text id="_IDGenTxtColBrandNr" text="Brand nr"/></Column>
+                          <Column id="_IDGenColBrand"><Text id="_IDGenTxtColBrand" text="Brand"/></Column>
+                          <Column id="_IDGenColSubGroup"><Text id="_IDGenTxtColSubGroup" text="Sub group"/></Column>
+                          <Column id="_IDGenColRegion"><Text id="_IDGenTxtColRegion" text="Region"/></Column>
+                          <Column id="_IDGenColCountry"><Text id="_IDGenTxtColCountry" text="Country"/></Column>
+                          <Column id="_IDGenColModelVersion"><Text id="_IDGenTxtColModelVersion" text="Model version"/></Column>
+                          <Column id="_IDGenColModel"><Text id="_IDGenTxtColModel" text="Model"/></Column>
+                          <Column id="_IDGenColPropulsionType"><Text id="_IDGenTxtColPropulsionType" text="Propuls type"/></Column>
+                          <Column id="_IDGenColDevelopmentCode"><Text id="_IDGenTxtColDevelopmentCode" text="Development code"/></Column>
+                          <Column id="_IDGenColPlatformNr"><Text id="_IDGenTxtColPlatformNr" text="Platforr Nr"/></Column>
+                          <Column id="_IDGenColPlatform"><Text id="_IDGenTxtColPlatform" text="Platform"/></Column>
+                      </columns>
+                      <items>
+                          <ColumnListItem id="_IDGenModelsColumnListItem" type="Active" press="onRowPress">
+                              <cells>
+                                  <Text id="_IDGenTxtModelStatus" text="{models>ModelStatus}"/>
+                                  <Text id="_IDGenTxtOEGroupNr" text="{models>OEGroupNr}"/>
+                                  <Text id="_IDGenTxtOEGroup" text="{models>OEGroup}"/>
+                                  <Text id="_IDGenTxtBrandNr" text="{models>BrandNr}"/>
+                                  <Text id="_IDGenTxtBrand" text="{models>Brand}"/>
+                                  <Text id="_IDGenTxtSubGroup" text="{models>SubGroup}"/>
+                                  <Text id="_IDGenTxtRegion" text="{models>Region}"/>
+                                  <Text id="_IDGenTxtCountry" text="{models>Country}"/>
+                                  <Text id="_IDGenTxtModelVersion" text="{models>ModelVersion}"/>
+                                  <Text id="_IDGenTxtModel" text="{models>Model}"/>
+                                  <Text id="_IDGenTxtPropulsionType" text="{models>PropulsionType}"/>
+                                  <Text id="_IDGenTxtDevelopmentCode" text="{models>DevelopmentCode}"/>
+                                  <Text id="_IDGenTxtPlatformNr" text="{models>PlatformNr}"/>
+                                  <Text id="_IDGenTxtPlatform" text="{models>Platform}"/>
+                              </cells>
+                          </ColumnListItem>
+                      </items>
+                  </Table>
+              </VBox>
+          </content>
+      </Page>
+  </mvc:View>

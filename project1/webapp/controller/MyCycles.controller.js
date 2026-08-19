@@ -296,7 +296,19 @@ sap.ui.define([
                             row.removeStyleClass("rowSelected");
                         });
                     }
-                }
+                },
+				ondblclick: function (oEvent) {
+					var oTable = that.byId("tblCycles");
+					
+					var bIsRowClick = oTable.getItems().some(function (row) {
+						return row.getDomRef() && row.getDomRef().contains(oEvent.target);
+					});
+					
+					if (bIsRowClick) {
+						var oRouter = sap.ui.core.UIComponent.getRouterFor(that);
+						oRouter.navTo("RouteModelsWithMe");
+					}
+				}
             });
         },
 
