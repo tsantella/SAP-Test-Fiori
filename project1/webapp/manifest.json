@@ -57,6 +57,9 @@
       "css": [
         {
           "uri": "css/style.css"
+        },
+        {
+          "uri": "css/modeldetail.css"
         }
       ]
     },
@@ -88,6 +91,27 @@
           ]
         },
         {
+          "name": "RouteApprovalFlow",
+          "pattern": "approvalflow",
+          "target": [
+            "TargetApprovalFlow"
+          ]
+        },
+        {
+          "name": "RouteApprovalFlowModel",
+          "pattern": "approvalflowmodel",
+          "target": [
+            "TargetApprovalFlowModel"
+          ]
+        },
+        {
+          "name": "RouteStatus",
+          "pattern": "status",
+          "target": [
+            "TargetStatus"
+          ]
+        },
+        {
           "name": "RouteCycleModel",
           "pattern": "cyclemodel",
           "target": [
@@ -99,8 +123,15 @@
           "pattern": "modelswithme",
           "target": [
             "TargetModelsWithMe"
-        	]
-      	}
+          ]
+        },
+        {
+          "name": "RouteModelDetail",
+          "pattern": "modeldetail",
+          "target": [
+            "TargetModelDetail"
+          ]
+        }
       ],
       "targets": {
         "TargetView1": {
@@ -111,6 +142,18 @@
           "id": "MyCycles",
           "name": "MyCycles"
         },
+        "TargetApprovalFlow": {
+          "id": "ApprovalFlow",
+          "name": "ApprovalFlow"
+        },
+        "TargetApprovalFlowModel": {
+          "id": "ApprovalFlowModel",
+          "name": "ApprovalFlowModel"
+        },
+        "TargetStatus": {
+          "id": "Status",
+          "name": "Status"
+        },
         "TargetCycleModel": {
           "id": "CycleModel",
           "name": "CycleModel"
@@ -118,7 +161,11 @@
 		"TargetModelsWithMe": {
 	      "id": "ModelsWithMe",
 	      "name": "ModelsWithMe"
-	    }
+        },
+        "TargetModelDetail": {
+          "id": "ModelDetail",
+          "name": "ModelDetail"
+        }
       }
     },
     "rootView": {

@@ -4,6 +4,8 @@
     <Page id="page" title="{i18n>title}">
         <content>
             <Button id="_IDGenButton" text="Go to My Cycles" press="onNavToMyCycles" />
+            <Button id="_ApprovalFlow" text="Approval Flow" press="onNavToApprovalFlow" />
+            <Button id="_Status" text="Status" press="onNavToStatus" />
             </content>
     </Page>
 </mvc:View>

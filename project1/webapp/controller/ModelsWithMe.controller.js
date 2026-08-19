@@ -2,14 +2,16 @@ sap.ui.define([
       "sap/ui/core/mvc/Controller",
       "sap/ui/model/json/JSONModel",
       "sap/m/MessageToast",
-      "sap/m/MessageBox"
-  ], function (Controller, JSONModel, MessageToast, MessageBox) {
+      "sap/m/MessageBox",
+      "sap/ui/core/EventBus"
+  ], function (Controller, JSONModel, MessageToast, MessageBox, EventBus) {
       "use strict";
       return Controller.extend("project1.controller.ModelsWithMe", {
 
           // Called automatically by UI5 once when this view is first created.
-          // Sets up pagination state, loads the model data, and wires up the
-          // "click outside the table" deselect behavior.
+          // Sets up pagination state, loads the model data, loads the defaults the
+          // Edit/New/View detail screen needs, and wires up the "click outside the
+          // table" deselect + double-click-to-view behavior.
           onInit: function () {
               this._iPageSize = 10;
               this._iCurrentPage = 1;
@@ -35,14 +37,38 @@ sap.ui.define([
               // loadData() above is async, so this runs once modelsWithMe.json has
               // actually finished loading. Stores the full dataset, initializes the
               // filtered working set to match it (no search applied yet - pagination
-              // reads from _aFilteredModels, not _aAllModels), and renders the first page.
+              // reads from _aFilteredModels, not _aAllModels), rebuilds the Edit/New
+              // dropdown options, and renders the first page.
               oModelsModel.attachRequestCompleted(() => {
                   this._aAllModels = oModelsModel.getProperty("/Models");
                   this._aFilteredModels = this._aAllModels.slice();
                   this._updatePage();
+                  this._rebuildDropdownOptions();
               });
 
-              // Click outside the table deselects the current row
+              // Loads the static defaults the Edit/New/View detail screen needs (a
+              // blank model template, mock budget rows, the year range, and the
+              // default status) from modeldetail.json. onEdit/onNew/the double-click
+              // handler all wait on this promise before opening the detail screen,
+              // so those defaults are guaranteed to be ready by the time it needs them.
+              this._pDefaultsLoaded = new Promise((resolve) => {
+                  var oDefaultsModel = new JSONModel();
+                  var sDefaultsPath = sap.ui.require.toUrl("project1/model/modeldetail.json");
+                  oDefaultsModel.loadData(sDefaultsPath);
+                  oDefaultsModel.attachRequestCompleted(() => {
+                      this._oBlankModelTemplate = oDefaultsModel.getProperty("/BlankModel") || {};
+                      this._aMockBudgetRows = oDefaultsModel.getProperty("/MockBudgetRows") || [];
+                      this._aYears = oDefaultsModel.getProperty("/Years") || [];
+                      this._sDefaultStatus = oDefaultsModel.getProperty("/DefaultStatus") || "";
+                      resolve();
+                  });
+              });
+
+              // Listen for saves coming back from the detail (Edit/New) screen
+              EventBus.getInstance().subscribe("app", "modelSaved", this._onModelSaved, this);
+
+              // Click outside the table deselects the current row; double-click
+              // opens the record for viewing (read-only)
               var oPage = this.byId("ModelsWithMe");
               oPage.addEventDelegate({
                   onclick: (oEvent) => {
@@ -62,6 +88,21 @@ sap.ui.define([
                       if (!bIsRowClick) {
                           this._clearSelection();
                       }
+                  },
+
+                  // Double-click ONLY opens the record for viewing (read-only)
+                  ondblclick: (oEvent) => {
+                      var oTable = this.byId("tblModels");
+
+                      var bIsRowClick = oTable.getItems().some((row) => {
+                          return row.getDomRef() && row.getDomRef().contains(oEvent.target);
+                      });
+
+                      if (bIsRowClick) {
+                          this._pDefaultsLoaded.then(() => {
+                              this._openModelDetail("view");
+                          });
+                      }
                   }
               });
 
@@ -77,6 +118,12 @@ sap.ui.define([
                       }
                   }
               });
+          },
+
+          // Unsubscribes from the EventBus when this view is destroyed, so a stale
+          // listener doesn't linger and fire after the controller is gone.
+          onExit: function () {
+              EventBus.getInstance().unsubscribe("app", "modelSaved", this._onModelSaved, this);
           },
 
           // Fires every time navigation lands on RouteModelsWithMe (unlike onInit,
@@ -130,10 +177,7 @@ sap.ui.define([
               this.byId("btnModelsDelete").setEnabled(false);
           },
 
-          // ===================== Toolbar button stubs =====================
-          // None of these have real logic yet - each is just wired to its button's
-          // press event in the view so the app doesn't error out. Replace the
-          // MessageToast.show(...) call with real behavior as each feature gets built.
+          // ===================== Search =====================
 
           // Fires when the Search button is pressed. Swaps the button out for the
           // SearchField (only one is visible at a time). Opening focuses the field
@@ -171,7 +215,7 @@ sap.ui.define([
           // substring match, checked across every column via Object.keys(oModel) so
           // it stays in sync automatically if fields are ever added/removed from the
           // JSON. Pure function (doesn't touch _aFilteredModels/page/table itself) so
-          // both live search and delete can reuse the same matching logic.
+          // live search, delete, and save can all reuse the same matching logic.
           _getFilteredModels: function (sQuery) {
               var sQueryLower = (sQuery || "").trim().toLowerCase();
 
@@ -190,27 +234,229 @@ sap.ui.define([
 
           // Rebuilds _aFilteredModels from the query, always resetting back to page 1
           // and re-rendering - used for live search, where jumping to page 1 on every
-          // keystroke is the expected behavior (unlike delete, which preserves the
-          // current page - see _deleteSelectedModel).
+          // keystroke is the expected behavior (unlike delete/save, which preserve the
+          // current page - see _deleteSelectedModel/_onModelSaved).
           _applySearchFilter: function (sQuery) {
               this._aFilteredModels = this._getFilteredModels(sQuery);
               this._iCurrentPage = 1;
               this._updatePage();
           },
 
-          onNew: function () { MessageToast.show("New button clicked!"); },
-          onEdit: function () { MessageToast.show("Edit not implemented yet."); },
+          // ===================== Edit / New / View (detail screen) =====================
+
+          // Opens the detail screen in edit mode for the selected row, once the
+          // detail screen's defaults (blank template, budget rows, years) are loaded.
+          onEdit: function () {
+              if (this._oSelectedContext) {
+                  this._pDefaultsLoaded.then(() => {
+                      this._openModelDetail("edit");
+                  });
+              }
+          },
+
+          // Opens the detail screen in "create new" mode - clears any current
+          // selection first, since a new record isn't tied to an existing row.
+          onNew: function () {
+              this._oSelectedContext = null;
+              this._pDefaultsLoaded.then(() => {
+                  this._openModelDetail("new");
+              });
+          },
+
+          // Builds the record to show on the detail screen (blank for "new", a deep
+          // copy of the selected row plus mock budget rows otherwise), stashes it on
+          // a shared "selectedModel" Component model, and navigates to the detail
+          // route. sMode ("view"/"edit"/"new") travels along on the record itself so
+          // the detail screen knows which mode to render in.
+          _openModelDetail: function (sMode) {
+              var oSelectedData;
+
+              if (sMode === "new") {
+                  oSelectedData = this._createBlankModel();
+              } else {
+                  if (!this._oSelectedContext) {
+                      return;
+                  }
+                  oSelectedData = JSON.parse(JSON.stringify(this._oSelectedContext.getObject()));
+                  oSelectedData.BudgetRows = this._getMockBudgetRows();
+              }
+
+              oSelectedData._mode = sMode;
+              oSelectedData._originalKey = oSelectedData.ModelVersion;
+
+              var oComponent = this.getOwnerComponent();
+              var oSelectedModel = oComponent.getModel("selectedModel");
+
+              if (!oSelectedModel) {
+                  oSelectedModel = new JSONModel();
+                  oComponent.setModel(oSelectedModel, "selectedModel");
+              }
+              oSelectedModel.setData(oSelectedData);
+
+              var oRouter = this.getOwnerComponent().getRouter();
+              this._clearSelection();
+              oRouter.navTo("RouteModelDetail");
+          },
+
+          // Starts a blank record from the modeldetail.json template, with blank
+          // (not mock) budget rows since there's nothing to prefill for a new model.
+          _createBlankModel: function () {
+              var oTemplate = JSON.parse(JSON.stringify(this._oBlankModelTemplate || {}));
+              oTemplate.BudgetRows = this._getBlankBudgetRows();
+              return oTemplate;
+          },
+
+          // Deep copy of the mock budget rows loaded from modeldetail.json, used to
+          // populate the budget table when viewing/editing an existing model.
+          _getMockBudgetRows: function () {
+              var aSource = this._aMockBudgetRows || [];
+              return JSON.parse(JSON.stringify(aSource));
+          },
+
+          // Generates one blank row per year (from modeldetail.json's Years list) for
+          // a brand-new model's budget table, since there's no data to show yet.
+          _getBlankBudgetRows: function () {
+              var aYears = this._aYears || [];
+              return aYears.map(function (sYear) {
+                  return { Year: sYear, Budget: "", LastFC: "", NewFC: "", LastIV: "", NewIV: "", BudgetView: "" };
+              });
+          },
+
+          // Fires when the detail screen publishes "modelSaved" on the EventBus
+          // (after Save is confirmed). Updates the existing row (edit mode) or
+          // appends a new one (new mode) in _aAllModels, then re-runs the current
+          // search filter so _aFilteredModels stays in sync - same reasoning as
+          // _deleteSelectedModel - and refreshes the dropdown options and table,
+          // preserving the current page unless it's no longer valid.
+          _onModelSaved: function (sChannel, sEvent, oData) {
+              if (!this._aAllModels) {
+                  this._aAllModels = [];
+              }
+
+              var oRecord = this._populateDerivedFields(oData.record);
+
+              if (oData.mode === "edit") {
+                  var iIndex = this._aAllModels.findIndex(function (oModel) {
+                      return oModel.ModelVersion === oData.originalKey;
+                  });
+                  if (iIndex > -1) {
+                      this._aAllModels[iIndex] = oRecord;
+                  } else {
+                      this._aAllModels.push(oRecord);
+                  }
+              } else if (oData.mode === "new") {
+                  this._aAllModels.push(oRecord);
+              }
+
+              var sCurrentQuery = this.byId("sfModelsSearch").getValue();
+              this._aFilteredModels = this._getFilteredModels(sCurrentQuery);
+
+              var iTotalPages = this._getTotalPages();
+              if (this._iCurrentPage > iTotalPages) {
+                  this._iCurrentPage = iTotalPages;
+              }
+
+              this._updatePage();
+              this._rebuildDropdownOptions();
+          },
+
+          // Fills in Status/ModelStatus and any missing Nr fields (OEGroupNr, BrandNr,
+          // PlatformNr) on a record before it's saved, so hand-typed values in the
+          // Edit/New form always end up with consistent derived data.
+          _populateDerivedFields: function (oRecord) {
+              var sStatus = oRecord.Status || oRecord.ModelStatus || this._sDefaultStatus;
+              oRecord.Status = sStatus;
+              oRecord.ModelStatus = sStatus;
+              oRecord.OEGroupNr = oRecord.OEGroupNr || this._lookupOrAssignNr("OEGroup", "OEGroupNr", oRecord.OEGroup);
+              oRecord.BrandNr = oRecord.BrandNr || this._lookupOrAssignNr("Brand", "BrandNr", oRecord.Brand);
+              oRecord.PlatformNr = oRecord.PlatformNr || this._lookupOrAssignNr("Platform", "PlatformNr", oRecord.Platform);
+              return oRecord;
+          },
+
+          // Given a text value (e.g. a Brand name), finds its existing Nr from other
+          // rows that already have one, or - if this value has never been seen -
+          // assigns the next number after the current highest, so every distinct
+          // value gets a stable, unique Nr.
+          _lookupOrAssignNr: function (sValueField, sNrField, sValue) {
+              if (!sValue) {
+                  return "";
+              }
+
+              var aModels = this._aAllModels || [];
+
+              var oExisting = aModels.find(function (oModel) {
+                  return oModel[sValueField] === sValue
+                      && oModel[sNrField] !== undefined
+                      && oModel[sNrField] !== null
+                      && oModel[sNrField] !== "";
+              });
+
+              if (oExisting) {
+                  return oExisting[sNrField];
+              }
+
+              var iMax = 0;
+              aModels.forEach(function (oModel) {
+                  var iNr = parseInt(oModel[sNrField], 10);
+                  if (!isNaN(iNr) && iNr > iMax) {
+                      iMax = iNr;
+                  }
+              });
+
+              return String(iMax + 1);
+          },
+
+          // Rebuilds the "dropdowns" Component model (unique, sorted Brand/SubGroup/
+          // PropulsionType/Platform values from the current dataset) that the
+          // Edit/New detail screen's dropdown fields read from. Called whenever the
+          // dataset changes (initial load, save, ...) so new values show up there too.
+          _rebuildDropdownOptions: function () {
+              var oComponent = this.getOwnerComponent();
+              var oDropdownModel = oComponent.getModel("dropdowns");
+
+              if (!oDropdownModel) {
+                  oDropdownModel = new JSONModel();
+                  oComponent.setModel(oDropdownModel, "dropdowns");
+              }
+
+              var aModels = this._aAllModels || [];
+
+              function uniqueSorted(sField) {
+                  var aSeen = [];
+                  aModels.forEach(function (oModel) {
+                      var sValue = oModel[sField];
+                      if (sValue !== undefined && sValue !== null && sValue !== "" && aSeen.indexOf(sValue) === -1) {
+                          aSeen.push(sValue);
+                      }
+                  });
+                  return aSeen.sort();
+              }
+
+              oDropdownModel.setData({
+                  Brands: uniqueSorted("Brand"),
+                  SubGroups: uniqueSorted("SubGroup"),
+                  PropulsionTypes: uniqueSorted("PropulsionType"),
+                  Platforms: uniqueSorted("Platform")
+              });
+          },
+
+          // ===================== Toolbar button stubs =====================
+          // None of these have real logic yet - each is just wired to its button's
+          // press event in the view so the app doesn't error out. Replace the
+          // MessageToast.show(...) call with real behavior as each feature gets built.
+
           onSendMultiple: function () { MessageToast.show("Send Multiple Models not implemented yet."); },
           onSendAll: function () { MessageToast.show("Send All Models not implemented yet."); },
           onImport: function () { MessageToast.show("Import not implemented yet."); },
           onExportExcel: function () { MessageToast.show("Export to Excel not implemented yet."); },
 
-          
+          // ===================== Delete =====================
+
           // Fires when the Delete button is pressed. Confirms with the user before
           // actually removing anything. Note: UI5's MessageBox.Action enum has no
           // built-in DELETE constant (only OK/CANCEL/YES/NO/RETRY/IGNORE/ABORT/CLOSE),
           // so a custom "Delete" string label is used for the affirmative action -
-          // same pattern your fellow dev used for her Save confirmation.
+          // same pattern used for the detail screen's Save confirmation.
           onDelete: function () {
               if (!this._oSelectedContext) return;
 

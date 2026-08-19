@@ -2,6 +2,14 @@
     border-radius: 2rem !important;
 }
 
+.pillButtonRounded {
+    border-radius: 50% !important;
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px !important;
+    padding: 0 !important;
+}
+
 .pillButtonGreen .sapMBtnInner {
     background-color: #4CAF50 !important;
     border-color: #4CAF50 !important;
@@ -90,6 +98,10 @@ tr.sapMListTblRow.rowSelected td {
     font-weight: bold;
     font-size: 1rem;
 }
+.FontTextBold {
+    font-weight: bold;
+    font-size: 0.875rem;
+}
 
 /* Remove focus outline on the pill buttons */
 .pillButton:focus,
@@ -156,4 +168,9 @@ tr.sapMListTblRow.rowSelected td {
     font-weight: 600;
     letter-spacing: 0.05em;
     color: #9a9a9a;
+}
+
+.statusDetailBox{
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }

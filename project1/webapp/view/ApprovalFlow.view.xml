@@ -1,0 +1,341 @@
+<mvc:View controllerName="project1.controller.ApprovalFlow"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+
+    <Page id="ApprovalFlow" showHeader="false" class="approvalFlowPage">
+        <content>
+            <VBox id="_IDGenVBox">
+
+                <!-- Custom title header -->
+                <HBox id="approvalHeaderBox" class="myCycleHeaderWrapper" alignItems="Center">
+                    <FlexBox id="approvalBadge" class="myCycleBadge" alignItems="Center" justifyContent="Center">
+                        <Text id="approvalBadgeText" text="{i18n>ApprovalFlow}" class="myCycleBadgeText"/>
+                    </FlexBox>
+                </HBox>
+            
+                <!--All Requests Buttons -->
+                <Text id="allRequestsHeaderText" text="{i18n>All Requests}" class="sapUiTinyMarginBegin cycleDetailTitle"/>
+                <Toolbar id="allRequestsHeader" class="sapUiSmallMarginBottom">
+                
+                <!-- Left side buttons -->
+                <Button id="allRequestsSearch"
+                        text="{i18n>Search}"
+                        icon="sap-icon://search"
+                        press="allRequestsSearch"
+                        class="pillButton pillButtonGrey"/>
+                <Button id="allRequestsView"
+                        text="{i18n>View}"
+                        icon="sap-icon://show"
+                        press="allRequestsView"
+                        enabled="false"
+                        class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
+                <Button id="allRequestsExport"
+                        text="{i18n>Export to Excel}"
+                        icon="sap-icon://download"
+                        press="allRequestsExport"
+                        class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
+                <Button id="allRequestsSelectAll"
+                        text="{i18n>Select All}"
+                        icon="sap-icon://add"
+                        press="allRequestsSelectAll"
+                        class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
+                <Button id="allRequestsDeselectAll"
+                        text="{i18n>Deselect All}"
+                        icon="sap-icon://less"
+                        press="allRequestsDeselectAll"
+                        class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
+                <Button id="allRequestsApprove"
+                        text="{i18n>Approve Selection(s)}"
+                        icon="sap-icon://accept"
+                        press="allRequestsApprove"
+                        type="Emphasized"
+                        enabled="false"
+                        class="pillButton pillButtonGreen sapUiTinyMarginBegin"/>  
+                <Button id="allRequestsReject"
+                        text="{i18n>Reject All}"
+                        icon="sap-icon://decline"
+                        press="allRequestsReject"
+                        type="Reject"
+                        enabled="false"
+                        class="pillButton pillButtonRed sapUiTinyMarginBegin"/>     
+
+                <!-- Push everything after this to the right -->
+                <ToolbarSpacer id="allRequestsToolbarSpacers"/>
+
+                    <!-- Pagination -->
+                    <Button
+                        id="btFirstPage"
+                        icon="sap-icon://media-rewind"
+                        type="Transparent"
+                        press="onFirstPage"
+                        enabled="false"
+                        tooltip="{i18n>firstPage}"/>
+                        <Button
+                        id="btPreviousPage"
+                        icon="sap-icon://slim-arrow-left"
+                        type="Transparent"
+                        press="onPreviousPage"
+                        enabled="false"
+                        tooltip="Previous Page"/>
+
+                    <Text
+                        id="txtPaginationInfos"
+                        text="0 to 0 of 0"
+                        class="sapUiTinyMarginBeginEnd"/>
+
+                    <Button
+                        id="btNextPage"
+                        icon="sap-icon://slim-arrow-right"
+                        type="Transparent"
+                        press="onNextPage"
+                        enabled="false"
+                        tooltip="Next Page"/>
+
+                    <Button
+                        id="btLastPage"
+                        icon="sap-icon://media-forward"
+                        type="Transparent"
+                        press="onLastPage"
+                        enabled="false"
+                        tooltip="Last Page"/>
+                </Toolbar>
+                <!-- Filters -->
+                <Toolbar id="filtersToolbar" visible="false">
+                    <Text id="modelVersionFilterText" text="{i18n>Model Version}" class="FontTextBold"/>
+                    <Input id="modelVersionInput" placeholder="{i18n>Search}" width="150px"  />
+                    <Text id="modelFilterText" text="{i18n>Model}" class="FontTextBold"/>
+                    <Input id="modelInput" placeholder="{i18n>Search}" width="150px" />
+                    <Button id="FilterSearch"
+                        text="{i18n>Search}"
+                        icon="sap-icon://search"
+                        press="onSearchSubmit"
+                        class="pillButton pillButtonGrey"/>
+                    <Button id="FilterClear"
+                        text="{i18n>Clear}"
+                        icon="sap-icon://delete"
+                        press="onSearchClear"
+                        class="pillButton pillButtonGrey"/>
+                    <Button id="closeFilters"
+                        text="{i18n>Close}"
+                        icon="sap-icon://decline"
+                        press="onCloseFilters"
+                        type="Reject"
+                        class="pillButton pillButtonRed"/>
+                </Toolbar>
+
+                <!-- Table -->
+                <Table id="tbApprovalFlow"
+                       inset="false"
+                       items="{cycles>/ApprovalFlow}">
+                    <columns>
+                        <Column id="modelVersionColumn"><Text id="modelVersionText" text="Model Version" /></Column>
+                        <Column id="modelColumn"><Text id="modelText" text="Model" /></Column>
+                        <Column id="requestTypeColumn"><Text id="requestTypeText" text="Request Type" /></Column>
+                        <Column id="requestStatusColumn"><Text id="requestStatusText" text="Request Status" /></Column>
+                        <Column id="createdByColumn"><Text id="createdByText" text="Created By" /></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem id="_IDGenColumnListItems" type="Active" press="onRowPress">
+                            <cells>
+                                <Text id="_IDGenTexts5" text="{cycles>ModelVersion}" />
+                                <Text id="_IDGenTexts6" text="{cycles>Model}" />
+                                <Text id="_IDGenTexts7" text="{cycles>RequestType}" />
+                                <Text id="_IDGenTexts8" text="{cycles>RequestStatus}" />
+                                <Text id="_IDGenTexts9" text="{cycles>CreatedBy}" />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+                <!--My Requests Buttons-->
+                <Text id="myRequestHeaderText" text="{i18n>My Requests}" class="sapUiTinyMarginBegin sapUiSmallMarginTop cycleDetailTitle"/>
+                <Toolbar id="myRequestHeader" class="sapUiSmallMarginBottom">
+                
+                <!-- Left side buttons -->
+                <Button id="myRequestView"
+                        text="{i18n>View}"
+                        icon="sap-icon://show"
+                        press="myRequestView"
+                        enabled="false"
+                        class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
+                <Button id="myRequestSelectAll"
+                        text="{i18n>Select All}"
+                        press="myRequestSelectAll"
+                        class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
+                <Button id="myRequestDeselectAll"
+                        text="{i18n>Deselect All}"
+                        press="myRequestDeselectAll"
+                        class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
+                <Button id="myRequestDelete"
+                        text="{i18n>Delete}"
+                        press="myRequestDelete"
+                        type="Reject"
+                        enabled="false"
+                        class="pillButton pillButtonRed sapUiTinyMarginBegin"/>  
+                <Button id="myRequestSendRequest"
+                        text="{i18n>Send Request}"
+                        icon="sap-icon://paper-plane"
+                        press="myRequestSendRequest"
+                        class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>     
+
+                <!-- Push everything after this to the right -->
+                <ToolbarSpacer id="_IDGenToolbarsSpacers"/>
+
+                    <!-- Pagination -->
+                    <Button
+                        id="myRequestFirstPage"
+                        icon="sap-icon://media-rewind"
+                        type="Transparent"
+                        press="onFirstPage"
+                        enabled="false"
+                        tooltip="{i18n>firstPage}"/>
+                        <Button
+                        id="myRequestPreviousPage"
+                        icon="sap-icon://slim-arrow-left"
+                        type="Transparent"
+                        press="onPreviousPage"
+                        enabled="false"
+                        tooltip="Previous Page"/>
+
+                    <Text
+                        id="myRequestPaginationInfo"
+                        text="0 to 0 of 0"
+                        class="sapUiTinyMarginBeginEnd"/>
+
+                    <Button
+                        id="myRequestNextPage"
+                        icon="sap-icon://slim-arrow-right"
+                        type="Transparent"
+                        press="onNextPage"
+                        enabled="false"
+                        tooltip="Next Page"/>
+
+                    <Button
+                        id="myRequestLastPage"
+                        icon="sap-icon://media-forward"
+                        type="Transparent"
+                        press="onLastPage"
+                        enabled="false"
+                        tooltip="Last Page"/>
+                </Toolbar>
+
+                <!-- Table -->
+                <Table id="myRequestTable"
+                       inset="false"
+                       items="{cycles>/MyRequests}">
+                    <columns>
+                        <Column id="myRequestModelVersionColumn"><Text id="myRequestsModelVersionText" text="Model Version" /></Column>
+                        <Column id="myRequestModelColumn"><Text id="myRequestsModelText" text="Model" /></Column>
+                        <Column id="myRequestRequestTypeColumn"><Text id="myRequestsRequestTypeText" text="Request Type" /></Column>
+                        <Column id="myRequestRequestStatusColumn"><Text id="myRequestsRequestStatusText" text="Request Status" /></Column>
+                        <Column id="myRequestCreatedByColumn"><Text id="myRequestsCreatedByText" text="Created By" /></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem id="myRequestColumnListItems" type="Active" press="onRowPress">
+                            <cells>
+                                <Text id="_myRequestGenText1" text="{cycles>ModelVersion}" />
+                                <Text id="_myRequestGenText2" text="{cycles>Model}" />
+                                <Text id="_myRequestGenText3" text="{cycles>RequestType}" />
+                                <Text id="_myRequestGenText4" text="{cycles>RequestStatus}" />
+                                <Text id="_myRequestGenText5" text="{cycles>CreatedBy}" />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+
+                <!-- Request New Model -->
+                <Text id="newRequestHeaderText" text="{i18n>Request for New Model}" class="sapUiTinyMarginBegin sapUiSmallMarginTop cycleDetailTitle"/>
+                <Toolbar id="newRequestHeader" class="sapUiSmallMarginBottom">
+                <!-- Left side buttons -->
+                    <!-- Left side buttons -->
+                <Button id="newRequestOpen"
+                        text="{i18n>Open}"
+                        press="newRequestOpen"
+                        enabled="false"
+                        class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
+                <Button id="newRequestSelectAll"
+                        text="{i18n>Select All}"
+                        press="newRequestSelectAll"
+                        class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
+                <Button id="newRequestApprove"
+                        text="{i18n>Approve Selection(s)}"
+                        icon="sap-icon://accept"
+                        press="newRequestApprove"
+                        type="Emphasized"
+                        enabled="false"
+                        class="pillButton pillButtonGreen sapUiTinyMarginBegin"/> 
+                <Button id="newRequestReject"
+                        text="{i18n>Reject All}"
+                        icon="sap-icon://decline"
+                        press="newRequestReject"
+                        type="Reject"
+                        enabled="false"
+                        class="pillButton pillButtonRed sapUiTinyMarginBegin"/>      
+
+                <!-- Push everything after this to the right -->
+                <ToolbarSpacer id="_NewReqToolbarsSpacers"/>
+
+                    <!-- Pagination -->
+                    <Button
+                        id="newRequestFirstPage"
+                        icon="sap-icon://media-rewind"
+                        type="Transparent"
+                        press="onFirstPage"
+                        enabled="false"
+                        tooltip="{i18n>firstPage}"/>
+                    <Button
+                        id="newRequestPreviousPage"
+                        icon="sap-icon://slim-arrow-left"
+                        type="Transparent"
+                        press="onPreviousPage"
+                        enabled="false"
+                        tooltip="Previous Page"/>
+
+                    <Text
+                        id="newRequestPaginationInfo"
+                        text="0 to 0 of 0"
+                        class="sapUiTinyMarginBeginEnd"/>
+
+                    <Button
+                        id="newRequestNextPage"
+                        icon="sap-icon://slim-arrow-right"
+                        type="Transparent"
+                        press="onNextPage"
+                        enabled="false"
+                        tooltip="Next Page"/>
+
+                    <Button
+                        id="newRequestLastPage"
+                        icon="sap-icon://media-forward"
+                        type="Transparent"
+                        press="onLastPage"
+                        enabled="false"
+                        tooltip="Last Page"/>
+                </Toolbar>
+
+                <!-- Table -->
+                <Table id="newRequestTable"
+                       inset="false"
+                       items="{cycles>/NewRequests}">
+                    <columns>
+                        <Column id="newRequestModelVersionColumn"><Text id="newRequestsModelVersionText" text="Model Version" /></Column>
+                        <Column id="newRequestModelColumn"><Text id="newRequestsModelText" text="Model" /></Column>
+                        <Column id="newRequestRequestTypeColumn"><Text id="newRequestsRequestTypeText" text="Request Type" /></Column>
+                        <Column id="newRequestRequestStatusColumn"><Text id="newRequestsRequestStatusText" text="Request Status" /></Column>
+                        <Column id="newRequestCreatedByColumn"><Text id="newRequestsCreatedByText" text="Created By" /></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem id="newRequestColumnListItems" type="Active" press="onRowPress">
+                            <cells>
+                                <Text id="_newRequestGenText1" text="{cycles>ModelVersion}" />
+                                <Text id="_newRequestGenText2" text="{cycles>Model}" />
+                                <Text id="_newRequestGenText3" text="{cycles>RequestType}" />
+                                <Text id="_newRequestGenText4" text="{cycles>RequestStatus}" />
+                                <Text id="_newRequestGenText5" text="{cycles>CreatedBy}" />
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>
