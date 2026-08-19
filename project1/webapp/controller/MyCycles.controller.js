@@ -48,28 +48,20 @@ sap.ui.define([
             this.byId("btnStopCycle").setEnabled(false);
         },
 
-        onView: function() {
-            this.byId("btnDelete").setEnabled(false);
-            this.byId("btnView").setEnabled(false);
-            this.byId("btnStopCycle").setEnabled(false);
+		// Fires when the "View" button is pressed (only enabled once a row is
+		// selected via onRowPress). Navigates to the Models with me screen -
+		// the same destination as double-clicking a row (see ondblclick in onInit).
+		onView: function() {
+	    	this.byId("btnDelete").setEnabled(false);
+  			this.byId("btnView").setEnabled(false);
+      		this.byId("btnStopCycle").setEnabled(false);
 
-            if (this._oSelectedContext) {
-                var oSelectedData = this._oSelectedContext.getObject();
-
-                var oComponent = this.getOwnerComponent();
-                var oSelectedModel = oComponent.getModel("selectedCycle");
-
-                if (!oSelectedModel) {
-                    oSelectedModel = new sap.ui.model.json.JSONModel();
-                    oComponent.setModel(oSelectedModel, "selectedCycle");
-                }
-                oSelectedModel.setData(oSelectedData);
-
-                var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-                this._clearSelection();
-                oRouter.navTo("RouteCycleModel");
-            }
-        },
+      		if (this._oSelectedContext) {
+        		var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+        		this._clearSelection();
+        		oRouter.navTo("RouteModelsWithMe");
+      		}
+      	},
 
         onStopCycle: function() {
             if (this._oSelectedContext) {

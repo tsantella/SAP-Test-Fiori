@@ -2,7 +2,7 @@
       xmlns:mvc="sap.ui.core.mvc"
       xmlns="sap.m">
 
-      <Page id="ModelsWithMe" showHeader="false" class="modelsWithMePage">
+      <Page id="ModelsWithMe" showHeader="false" class="modelsWithMePage sapUiContentPadding">
           <content>
               <VBox id="_IDGenModelsVBox">
 
@@ -26,9 +26,12 @@
                       </items>
                   </IconTabBar>
 
-                  <!-- Action Buttons -->
-                  <Toolbar id="modelsTbHeader" class="sapUiSmallMarginBottom">
+                  <!-- Action Buttons: OverflowToolbar instead of plain Toolbar - buttons
+                       that don't fit collapse into a "..." overflow menu automatically,
+                       same idea as IconTabBar's own "More" dropdown above. -->
+                  <OverflowToolbar id="modelsTbHeader" class="sapUiSmallMarginBottom">
                       <Button id="btnModelsSearch" text="Search" icon="sap-icon://search" press="onSearch" class="pillButton pillButtonGrey"/>
+                      <SearchField id="sfModelsSearch" width="16rem" visible="false" liveChange="onSearchLiveChange" placeholder="Search..." class="sapUiTinyMarginBegin"/>
                       <Button id="btnModelsNew" text="New" icon="sap-icon://document-text" press="onNew" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
                       <Button id="btnModelsEdit" text="Edit" icon="sap-icon://edit" press="onEdit" enabled="false" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
                       <Button id="btnSendMultiple" text="Send Multiple Models" icon="sap-icon://email" press="onSendMultiple" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>      
@@ -39,16 +42,31 @@
 
                       <ToolbarSpacer id="_IDGenModelsToolbarSpacer"/>
 
-                      <!-- Pagination -->
-                      <Button id="btnModelsFirstPage" icon="sap-icon://media-rewind" type="Transparent" press="onFirstPage" enabled="false" tooltip="First Page"/>
-                      <Button id="btnModelsPreviousPage" icon="sap-icon://slim-arrow-left" type="Transparent" press="onPreviousPage" enabled="false" tooltip="Previous Page"/>
-                      <Text id="txtModelsPaginationInfo" text="0 to 0 of 0" class="sapUiTinyMarginBeginEnd"/>
-                      <Button id="btnModelsNextPage" icon="sap-icon://slim-arrow-right" type="Transparent" press="onNextPage" enabled="false" tooltip="Next Page"/>
-                      <Button id="btnModelsLastPage" icon="sap-icon://media-forward" type="Transparent" press="onLastPage" enabled="false" tooltip="Last Page"/>
-                  </Toolbar>
+                      <!-- Pagination: wrapped in one HBox so OverflowToolbar treats all 5
+                           controls as a SINGLE item - keeps them together on one row
+                           whether they fit in the bar or get pushed into the overflow
+                           popover, instead of each button stacking on its own row there. -->
+                      <HBox id="hboxModelsPagination" alignItems="Center">
+                          <Button id="btnModelsFirstPage" icon="sap-icon://media-rewind" type="Transparent" press="onFirstPage" enabled="false" tooltip="First Page"/>
+                          <Button id="btnModelsPreviousPage" icon="sap-icon://slim-arrow-left" type="Transparent" press="onPreviousPage" enabled="false" tooltip="Previous Page"/>
+                          <Text id="txtModelsPaginationInfo" text="0 to 0 of 0" class="sapUiTinyMarginBeginEnd"/>
+                          <Button id="btnModelsNextPage" icon="sap-icon://slim-arrow-right" type="Transparent" press="onNextPage" enabled="false" tooltip="Next Page"/>
+                          <Button id="btnModelsLastPage" icon="sap-icon://media-forward" type="Transparent" press="onLastPage" enabled="false" tooltip="Last Page"/>
+                      </HBox>
+                  </OverflowToolbar>
 
-                  <!-- Table -->
-                  <Table id="tblModels" inset="false" items="{models>/Models}">
+                  <!-- ScrollContainer: the Page's own content area has overflow-x:hidden
+                       by default (so the whole page never scrolls sideways), which would
+                       silently clip the wide table instead of showing a scrollbar. Wrapping
+                       the table in its own horizontal-only ScrollContainer creates an
+                       independent scroll context that isn't affected by that. -->
+                  <ScrollContainer id="scModelsTable" horizontal="true" vertical="false" width="100%" height="auto">
+                  <!-- Table: width="100%" lets it fill wide screens instead of stopping
+                       at a fixed size with empty space beside it; the modelsTableMinWidth
+                       CSS class (min-width, see style.css) is what forces horizontal
+                       scroll on narrow screens instead of squeezing all 14 columns down
+                       to unreadable widths - a fixed width alone can't do both at once. -->
+                  <Table id="tblModels" inset="false" width="100%" class="modelsTableMinWidth" items="{models>/Models}">
                       <columns>
                           <Column id="_IDGenColModelStatus"><Text id="_IDGenTxtColModelStatus" text="Model Status"/></Column>
                           <Column id="_IDGenColOEGroupNr"><Text id="_IDGenTxtColOEGroupNr" text="OE grp Nr"/></Column>
@@ -86,6 +104,7 @@
                           </ColumnListItem>
                       </items>
                   </Table>
+                  </ScrollContainer>
               </VBox>
           </content>
       </Page>
