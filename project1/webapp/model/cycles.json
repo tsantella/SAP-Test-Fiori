@@ -84,5 +84,147 @@
       "CycleStatus": "Completed",
       "UploadStatus": "Pending"
     }
+  ],
+  "ApprovalFlow": [
+    {
+      "ModelVersion": "MV-2026-001",
+      "Model": "Sales Forecast",
+      "RequestType": "Create",
+      "RequestStatus": "Pending",
+      "CreatedBy": "Juan Dela Cruz"
+    },
+    {
+      "ModelVersion": "MV-2026-002",
+      "Model": "Inventory Planning",
+      "RequestType": "Update",
+      "RequestStatus": "Approved",
+      "CreatedBy": "Maria Santos"
+    },
+    {
+      "ModelVersion": "MV-2026-003",
+      "Model": "Demand Forecast",
+      "RequestType": "Create",
+      "RequestStatus": "Rejected",
+      "CreatedBy": "Pedro Reyes"
+    },
+    {
+      "ModelVersion": "MV-2026-004",
+      "Model": "Supply Planning",
+      "RequestType": "Update",
+      "RequestStatus": "Pending",
+      "CreatedBy": "Anna Garcia"
+    },
+    {
+      "ModelVersion": "MV-2026-005",
+      "Model": "Production Planning",
+      "RequestType": "Create",
+      "RequestStatus": "Approved",
+      "CreatedBy": "Michael Tan"
+    },
+    {
+      "ModelVersion": "MV-2026-006",
+      "Model": "Financial Forecast",
+      "RequestType": "Update",
+      "RequestStatus": "Pending",
+      "CreatedBy": "Sofia Cruz"
+    },
+    {
+      "ModelVersion": "MV-2026-007",
+      "Model": "Workforce Planning",
+      "RequestType": "Delete",
+      "RequestStatus": "Rejected",
+      "CreatedBy": "Daniel Lim"
+    },
+    {
+      "ModelVersion": "MV-2026-008",
+      "Model": "Revenue Planning",
+      "RequestType": "Create",
+      "RequestStatus": "Approved",
+      "CreatedBy": "James Wilson"
+    },
+    {
+      "ModelVersion": "MV-2026-009",
+      "Model": "Expense Forecast",
+      "RequestType": "Update",
+      "RequestStatus": "Pending",
+      "CreatedBy": "Lisa Fernandez"
+    },
+    {
+      "ModelVersion": "MV-2026-010",
+      "Model": "Budget Planning",
+      "RequestType": "Create",
+      "RequestStatus": "Approved",
+      "CreatedBy": "Robert Garcia"
+    },
+    {
+      "ModelVersion": "MV-2026-011",
+      "Model": "Headcount Forecast",
+      "RequestType": "Update",
+      "RequestStatus": "Rejected",
+      "CreatedBy": "Kevin Wong"
+    },
+    {
+      "ModelVersion": "MV-2026-012",
+      "Model": "Procurement Planning",
+      "RequestType": "Create",
+      "RequestStatus": "Pending",
+      "CreatedBy": "Angela Ramos"
+    },
+    {
+      "ModelVersion": "MV-2026-013",
+      "Model": "Logistics Forecast",
+      "RequestType": "Update",
+      "RequestStatus": "Approved",
+      "CreatedBy": "Christopher Lee"
+    },
+    {
+      "ModelVersion": "MV-2026-014",
+      "Model": "Capacity Planning",
+      "RequestType": "Delete",
+      "RequestStatus": "Pending",
+      "CreatedBy": "Jennifer Tan"
+    },
+    {
+      "ModelVersion": "MV-2026-015",
+      "Model": "Demand Planning",
+      "RequestType": "Create",
+      "RequestStatus": "Approved",
+      "CreatedBy": "Mark Bautista"
+    },
+    {
+      "ModelVersion": "MV-2026-016",
+      "Model": "Order Forecast",
+      "RequestType": "Update",
+      "RequestStatus": "Pending",
+      "CreatedBy": "Rachel Mendoza"
+    },
+    {
+      "ModelVersion": "MV-2026-017",
+      "Model": "Resource Planning",
+      "RequestType": "Create",
+      "RequestStatus": "Rejected",
+      "CreatedBy": "Anthony Rivera"
+    },
+    {
+      "ModelVersion": "MV-2026-018",
+      "Model": "Cost Forecast",
+      "RequestType": "Update",
+      "RequestStatus": "Approved",
+      "CreatedBy": "Grace Villanueva"
+    },
+    {
+      "ModelVersion": "MV-2026-019",
+      "Model": "Sales Planning",
+      "RequestType": "Create",
+      "RequestStatus": "Pending",
+      "CreatedBy": "Steven Aquino"
+    },
+    {
+      "ModelVersion": "MV-2026-020",
+      "Model": "Operations Planning",
+      "RequestType": "Update",
+      "RequestStatus": "Approved",
+      "CreatedBy": "Nicole Torres"
+    }
   ]
 }
