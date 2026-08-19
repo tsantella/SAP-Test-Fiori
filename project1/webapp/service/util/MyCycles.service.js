@@ -1,41 +1,11 @@
 sap.ui.define([], function() {
     "use strict";
 
+    var SERVICE_BASE = "/odata/v4/cycles";
+
     return {
 
-        // ===================== Cycles: index & pagination =====================
-
-        /**
-         * Converts a local page-slice binding path (e.g. "/Cycles/3") into the
-         * index within the full dataset.
-         */
-        getGlobalIndex: function(sPath, iCurrentPage, iPageSize) {
-            var aParts = sPath.split("/");
-            var iLocalIndex = parseInt(aParts[aParts.length - 1], 10);
-            return (iCurrentPage - 1) * iPageSize + iLocalIndex;
-        },
-
-        /**
-         * Removes an item from the full dataset by global index.
-         * Returns the updated array.
-         */
-        deleteCycle: function(aAllCycles, iGlobalIndex) {
-            aAllCycles.splice(iGlobalIndex, 1);
-            return aAllCycles;
-        },
-
-        /**
-         * Filters cycles by Creator only, live as-you-type.
-         */
-        searchByCreator: function(aAllCycles, sQuery) {
-            if (!sQuery) {
-                return aAllCycles;
-            }
-            var sLower = sQuery.toLowerCase();
-            return aAllCycles.filter(function(oCycle) {
-                return (oCycle.creator || "").toLowerCase().includes(sLower);
-            });
-        },
+        // ===================== Cycles: pagination =====================
 
         getTotalPages: function(aAllCycles, iPageSize) {
             return Math.max(1, Math.ceil(aAllCycles.length / iPageSize));
@@ -64,13 +34,161 @@ sap.ui.define([], function() {
             return iCurrentPage > iTotalPages ? iTotalPages : iCurrentPage;
         },
 
-        // ===================== Cycles: row state =====================
+        // ===================== Cycles: filtering & business rules =====================
+
+        /**
+         * Filters cycles by Creator only, live as-you-type.
+         */
+        searchByCreator: function(aAllCycles, sQuery) {
+            if (!sQuery) {
+                return aAllCycles;
+            }
+            var sLower = sQuery.toLowerCase();
+            return aAllCycles.filter(function(oCycle) {
+                return (oCycle.creator || "").toLowerCase().includes(sLower);
+            });
+        },
 
         /**
          * Business rule: a cycle can only be "stopped" while WorkInProgress.
          */
         isCycleStoppable: function(oCycleData) {
             return !!oCycleData && oCycleData.cycleStatus === "WorkInProgress";
+        },
+
+        // ===================== Backend: draft protocol (direct OData calls) =====================
+        // Called via fetch() instead of the ODataModel's bindContext/action API, since UI5 v4
+        // caches context objects by path and got confused chaining draftEdit -> draftActivate
+        // through the model layer.
+
+        _discardDraft: function(oActiveContext) {
+            var sActivePath = oActiveContext.getPath(); // '/Cycles(ID=...,IsActiveEntity=true)'
+            var sDraftPath = sActivePath.replace("IsActiveEntity=true", "IsActiveEntity=false");
+            var sUrl = SERVICE_BASE + sDraftPath;
+
+            return fetch(sUrl, { method: "DELETE" })
+                .then(function(oResponse) {
+                    // 404 just means no draft existed - that's fine, treat as success
+                    return oResponse.status;
+                })
+                .catch(function() {
+                    // network hiccup on a best-effort cleanup call - safe to ignore
+                    return null;
+                });
+        },
+
+        _startEdit: function(oActiveContext) {
+            var sActivePath = oActiveContext.getPath();
+            var sUrl = SERVICE_BASE + sActivePath + "/CyclesService.draftEdit";
+
+            return fetch(sUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ PreserveChanges: true })
+            }).then(function(oResponse) {
+                if (!oResponse.ok) {
+                    throw new Error("draftEdit failed: " + oResponse.status);
+                }
+                return oResponse.json();
+            }).then(function(oDraftEntity) {
+                return "/Cycles(ID=" + oDraftEntity.ID + ",IsActiveEntity=false)";
+            });
+        },
+
+        _patchDraft: function(sDraftPath, oChanges) {
+            var sUrl = SERVICE_BASE + sDraftPath;
+
+            return fetch(sUrl, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(oChanges)
+            }).then(function(oResponse) {
+                if (!oResponse.ok) {
+                    throw new Error("Patch failed: " + oResponse.status);
+                }
+            });
+        },
+
+        _activateDraft: function(sDraftPath) {
+            var sUrl = SERVICE_BASE + sDraftPath + "/CyclesService.draftActivate";
+
+            return fetch(sUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({})
+            }).then(function(oResponse) {
+                if (!oResponse.ok) {
+                    throw new Error("draftActivate failed: " + oResponse.status);
+                }
+            });
+        },
+
+        // ===================== Backend: public CRUD operations =====================
+
+        /**
+         * Deletes the active (non-draft) entity directly.
+         * oODataContext must be a real sap.ui.model.odata.v4.Context for the active entity.
+         */
+        deleteCycle: function(oODataContext) {
+            return oODataContext.delete();
+        },
+
+        /**
+         * Full draft cycle to update a field on an existing entity:
+         * discard any leftover draft -> start edit -> patch -> activate.
+         */
+        updateCycle: function(oActiveContext, oChanges) {
+            var that = this;
+
+            return this._discardDraft(oActiveContext).then(function() {
+                return that._startEdit(oActiveContext);
+            }).then(function(sDraftPath) {
+                return that._patchDraft(sDraftPath, oChanges).then(function() {
+                    return that._activateDraft(sDraftPath);
+                });
+            });
+        },
+
+        /**
+         * Creates a new Cycle (draft create) and immediately activates it.
+         */
+        createCycle: function(oData) {
+            var that = this;
+            var sUrl = SERVICE_BASE + "/Cycles";
+
+            return fetch(sUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(oData)
+            }).then(function(oResponse) {
+                if (!oResponse.ok) {
+                    throw new Error("Create failed: " + oResponse.status);
+                }
+                return oResponse.json();
+            }).then(function(oDraftEntity) {
+                var sDraftPath = "/Cycles(ID=" + oDraftEntity.ID + ",IsActiveEntity=false)";
+                return that._activateDraft(sDraftPath);
+            });
+        },
+
+        /**
+         * Creates multiple cycles one at a time (sequential, not parallel - avoids
+         * hammering the backend with N simultaneous draft-create-then-activate chains,
+         * and keeps errors easy to attribute to a row).
+         * Expects rows shaped like the Excel import output: { Creator, Title, CycleStatus, UploadStatus }.
+         */
+        createCyclesFromRows: function(aRows) {
+            var that = this;
+            return aRows.reduce(function(oChain, oRow) {
+                return oChain.then(function() {
+                    return that.createCycle({
+                        creator: oRow.Creator,
+                        title: oRow.Title,
+                        cycleStatus: oRow.CycleStatus,
+                        uploadStatus: oRow.UploadStatus
+                    });
+                });
+            }, Promise.resolve());
         },
 
         // ===================== Excel import validation =====================
@@ -114,13 +232,6 @@ sap.ui.define([], function() {
             });
 
             return { valid: aValidCycles, errors: aErrorLogs };
-        },
-
-        /**
-         * Merges newly imported valid cycles into the full dataset.
-         */
-        mergeImportedCycles: function(aAllCycles, aValidCycles) {
-            return aAllCycles.concat(aValidCycles);
         },
 
         // ===================== Import error log pagination =====================

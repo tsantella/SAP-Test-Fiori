@@ -6,8 +6,9 @@ sap.ui.define([
     "sap/m/MessageBox",
     "sap/ui/model/Filter",
     "sap/ui/model/FilterOperator",
+    "sap/ui/core/BusyIndicator",
     "project1/service/util/MyCycles.service"
-], function(Controller, JSONModel, Fragment, MessageToast, MessageBox, Filter, FilterOperator, MyCyclesService) {
+], function(Controller, JSONModel, Fragment, MessageToast, MessageBox, Filter, FilterOperator, BusyIndicator, MyCyclesService) {
     "use strict";
     return Controller.extend("project1.controller.MyCycles", {
 
@@ -57,27 +58,29 @@ sap.ui.define([
         },
 
         // ===================== Row actions =====================
+        // These only orchestrate UI state (busy indicator, selection, toasts, reload).
+        // All backend/draft-protocol logic lives in MyCycles.service.js.
 
         onDelete: function() {
-            if (this._oSelectedContext) {
-                var sPath = this._oSelectedContext.getPath();
-                var iGlobalIndex = MyCyclesService.getGlobalIndex(sPath, this._iCurrentPage, this._iPageSize);
+            var that = this;
 
-                this._aAllCycles = MyCyclesService.deleteCycle(this._aAllCycles, iGlobalIndex);
-
-                var iTotalPages = MyCyclesService.getTotalPages(this._aAllCycles, this._iPageSize);
-                this._iCurrentPage = MyCyclesService.clampPage(this._iCurrentPage, iTotalPages);
-
-                this._oSelectedContext = null;
-                this._updatePage();
-
-                this._clearSelection();
-                MessageToast.show("Row deleted!");
+            if (this._oSelectedODataContext) {
+                BusyIndicator.show(0);
+                MyCyclesService.deleteCycle(this._oSelectedODataContext).then(function() {
+                    that._clearSelection();
+                    return that._reloadCycles();
+                }).then(function() {
+                    BusyIndicator.hide();
+                    MessageToast.show("Row deleted!");
+                }).catch(function(oError) {
+                    BusyIndicator.hide();
+                    MessageBox.error("Failed to delete cycle: " + oError.message);
+                });
+            } else {
+                this.byId("btnDelete").setEnabled(false);
+                this.byId("btnView").setEnabled(false);
+                this.byId("btnStopCycle").setEnabled(false);
             }
-
-            this.byId("btnDelete").setEnabled(false);
-            this.byId("btnView").setEnabled(false);
-            this.byId("btnStopCycle").setEnabled(false);
         },
 
         onView: function() {
@@ -104,29 +107,34 @@ sap.ui.define([
         },
 
         onStopCycle: function() {
-            if (this._oSelectedContext) {
-                this._oSelectedContext.getModel().setProperty(
-                    this._oSelectedContext.getPath() + "/CycleStatus",
-                    "Stopped"
-                );
+            var that = this;
 
-                this._clearSelection();
-                MessageToast.show("Cycle stopped!");
+            if (this._oSelectedODataContext) {
+                BusyIndicator.show(0);
+                MyCyclesService.updateCycle(this._oSelectedODataContext, { cycleStatus: "Stopped" }).then(function() {
+                    that._clearSelection();
+                    return that._reloadCycles();
+                }).then(function() {
+                    BusyIndicator.hide();
+                    MessageToast.show("Cycle stopped!");
+                }).catch(function(oError) {
+                    BusyIndicator.hide();
+                    MessageBox.error("Failed to stop cycle: " + oError.message);
+                });
+            } else {
+                this.byId("btnDelete").setEnabled(false);
+                this.byId("btnView").setEnabled(false);
+                this.byId("btnStopCycle").setEnabled(false);
             }
-
-            this.byId("btnDelete").setEnabled(false);
-            this.byId("btnView").setEnabled(false);
-            this.byId("btnStopCycle").setEnabled(false);
         },
 
         onRowPress: function(oEvent) {
             var oItem = oEvent.getSource();
-
             var oTable = this.byId("tblCycles");
+
             oTable.getItems().forEach(function(row) {
                 row.removeStyleClass("rowSelected");
             });
-
             oItem.addStyleClass("rowSelected");
 
             this._oSelectedContext = oItem.getBindingContext("cycles");
@@ -136,6 +144,7 @@ sap.ui.define([
 
             if (this._oSelectedContext) {
                 var oSelectedData = this._oSelectedContext.getObject();
+                this._oSelectedODataContext = this._oContextsById[oSelectedData.ID];
                 this.byId("btnStopCycle").setEnabled(MyCyclesService.isCycleStoppable(oSelectedData));
             }
         },
@@ -240,56 +249,61 @@ sap.ui.define([
                 document.head.appendChild(oScript);
             });
 
-            var that = this;
-
-            // Local JSON model that the table + pagination/search logic reads from
             var oCyclesModel = new JSONModel({ Cycles: [] });
             this.getView().setModel(oCyclesModel, "cycles");
 
-            // Read active (non-draft) Cycles from the CAP OData service
-            var oODataModel = this.getOwnerComponent().getModel(); // default "" model from manifest.json
-            var oListBinding = oODataModel.bindList("/Cycles", null, [], [
-                new Filter("IsActiveEntity", FilterOperator.EQ, true)
-            ]);
+            this._reloadCycles();
 
-            oListBinding.requestContexts(0, 10000).then(function(aContexts) {
-                var aData = aContexts.map(function(oContext) {
-                    return oContext.getObject();
-                });
-
-                oCyclesModel.setProperty("/Cycles", aData);
-                that._aAllCycles = aData;
-                that._aAllCyclesUnfiltered = aData;
-                that._updatePage();
-            }).catch(function(oError) {
-                MessageBox.error("Failed to load cycles: " + oError.message);
-            });
-
+            var that = this;
             var oPage = this.byId("MyCycles");
 
             oPage.addEventDelegate({
                 onclick: function(oEvent) {
                     var oTable = that.byId("tblCycles");
-
                     var sTargetId = oEvent.target.id;
                     if (sTargetId.includes("btnDelete") || sTargetId.includes("btnView") || sTargetId.includes("btnStopCycle")) {
                         return;
                     }
-
                     var bIsRowClick = oTable.getItems().some(function(row) {
                         return row.getDomRef().contains(oEvent.target);
                     });
-
                     if (!bIsRowClick) {
                         that.byId("btnDelete").setEnabled(false);
                         that.byId("btnView").setEnabled(false);
                         that.byId("btnStopCycle").setEnabled(false);
-
                         oTable.getItems().forEach(function(row) {
                             row.removeStyleClass("rowSelected");
                         });
                     }
                 }
+            });
+        },
+
+        _reloadCycles: function() {
+            var that = this;
+            var oCyclesModel = this.getView().getModel("cycles");
+            var oODataModel = this.getOwnerComponent().getModel();
+            var oListBinding = oODataModel.bindList("/Cycles", null, [], [
+                new Filter("IsActiveEntity", FilterOperator.EQ, true)
+            ]);
+
+            return oListBinding.requestContexts(0, 10000).then(function(aContexts) {
+                var aData = [];
+                that._oContextsById = {};
+
+                aContexts.forEach(function(oContext) {
+                    var oObj = oContext.getObject();
+                    aData.push(oObj);
+                    that._oContextsById[oObj.ID] = oContext;
+                });
+
+                oCyclesModel.setProperty("/Cycles", aData);
+                that._aAllCycles = aData;
+                that._aAllCyclesUnfiltered = aData;
+                that._iCurrentPage = 1;
+                that._updatePage();
+            }).catch(function(oError) {
+                MessageBox.error("Failed to load cycles: " + oError.message);
             });
         },
 
@@ -354,12 +368,17 @@ sap.ui.define([
                         if (oResult.errors.length > 0) {
                             that._showImportLog(oResult.errors);
                         } else {
-                            that._aAllCycles = MyCyclesService.mergeImportedCycles(that._aAllCycles, oResult.valid);
-                            that._iCurrentPage = MyCyclesService.getTotalPages(that._aAllCycles, that._iPageSize);
-                            that._updatePage();
-
-                            MessageToast.show(oResult.valid.length + " cycle(s) imported successfully!");
-                            that._oNewCycleDialog.close();
+                            BusyIndicator.show(0);
+                            MyCyclesService.createCyclesFromRows(oResult.valid).then(function() {
+                                that._oNewCycleDialog.close();
+                                return that._reloadCycles();
+                            }).then(function() {
+                                BusyIndicator.hide();
+                                MessageToast.show(oResult.valid.length + " cycle(s) imported successfully!");
+                            }).catch(function(oError) {
+                                BusyIndicator.hide();
+                                MessageBox.error("Failed to import cycles: " + oError.message);
+                            });
                         }
 
                     } catch (oError) {
@@ -414,9 +433,31 @@ sap.ui.define([
         },
 
         onCreateFromLast: function() {
-            this._oNewCycleDialog.close();
-            MessageToast.show("Create cycle from last goes here");
-            // TODO: clone the most recent cycle
+            var that = this;
+
+            if (!this._aAllCycles || this._aAllCycles.length === 0) {
+                MessageBox.warning("No existing cycle to clone from.");
+                return;
+            }
+
+            var oLastCycle = this._aAllCycles[this._aAllCycles.length - 1];
+
+            BusyIndicator.show(0);
+            MyCyclesService.createCycle({
+                creator: oLastCycle.creator,
+                title: oLastCycle.title,
+                cycleStatus: oLastCycle.cycleStatus,
+                uploadStatus: oLastCycle.uploadStatus
+            }).then(function() {
+                that._oNewCycleDialog.close();
+                return that._reloadCycles();
+            }).then(function() {
+                BusyIndicator.hide();
+                MessageToast.show("Cycle created from last!");
+            }).catch(function(oError) {
+                BusyIndicator.hide();
+                MessageBox.error("Failed to create cycle: " + oError.message);
+            });
         },
 
         _clearSelection: function() {
@@ -427,6 +468,7 @@ sap.ui.define([
             });
 
             this._oSelectedContext = null;
+            this._oSelectedODataContext = null;
 
             this.byId("btnDelete").setEnabled(false);
             this.byId("btnView").setEnabled(false);
