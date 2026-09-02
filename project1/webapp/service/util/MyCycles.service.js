@@ -375,7 +375,9 @@ sap.ui.define([
             var that = this;
             var oODataModel = this._oController.getOwnerComponent().getModel();
             var oListBinding = oODataModel.bindList("/Cycles", null, [], [
-                new Filter("IsActiveEntity", FilterOperator.EQ, true)
+                new Filter("IsActiveEntity", FilterOperator.EQ, true),
+                // Only show rows that have not been soft-deleted (deleted = 0).
+                new Filter("deleted", FilterOperator.EQ, 0)
             ]);
 
             return oListBinding.requestContexts(0, 10000).then(function(aContexts) {
