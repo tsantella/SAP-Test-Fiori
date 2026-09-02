@@ -162,9 +162,13 @@ tr.sapMListTblRow.rowSelected td {
     color: #9a9a9a;
 }
 
-.sapUshellApplicationContainerLimitedWidth,
-.sapUShellApplicationContainer,
-#__container1 {
+/* Keep the app at full launchpad width, including after navigating back to
+   the launchpad and reopening it. The shell builds a fresh application
+   container (with a new generated id) on every open, so this must match on
+   the stable shell classes - never a hard-coded "#__container1". Works
+   together with "fullWidth": true in manifest.json. */
+.sapUShellApplicationContainerLimitedWidth,
+.sapUShellApplicationContainer {
     max-width: 100% !important;
     width: 100% !important;
     margin: 0 !important;
