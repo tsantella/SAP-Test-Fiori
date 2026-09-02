@@ -10,11 +10,11 @@
                 <!-- Custom header bar, matches MyCycles page style -->
                 <HBox id="detailHeaderBox" class="myCycleHeaderWrapper" alignItems="Center" justifyContent="SpaceBetween">
                     <HBox id="_IDGenHBox1" alignItems="Center">
-                        <!-- <Button id="btnBack"
+                        <Button id="btnBack"
                                 icon="sap-icon://nav-back"
                                 type="Transparent"
                                 press="onNavBack"
-                                class="sapUiTinyMarginEnd"/> -->
+                                class="sapUiTinyMarginEnd"/>
                         <FlexBox id="detailTitleBadge" class="myCycleBadge" alignItems="Center" justifyContent="Center">
                             <Text id="detailTitleBadgeText" text="{i18n>CycleModel}" class="myCycleBadgeText"/>
                         </FlexBox>

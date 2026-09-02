@@ -132,13 +132,6 @@ sap.ui.define([
             this._disableRowActions();
         },
 
-        // ===================== navigation =====================
-
-        navBack: function() {
-            // Example navigation back
-            // window.history.go(-1);
-        },
-
         // ===================== search =====================
 
         toggleSearch: function() {
@@ -319,14 +312,6 @@ sap.ui.define([
             };
         },
 
-        /**
-         * Clamps the current page back within range after a deletion
-         * (e.g. deleting the last item on the last page).
-         */
-        clampPage: function(iCurrentPage, iTotalPages) {
-            return iCurrentPage > iTotalPages ? iTotalPages : iCurrentPage;
-        },
-
         // ===================== pagination: import error log dialog =====================
 
         goToErrFirstPage: function() {
@@ -388,7 +373,6 @@ sap.ui.define([
 
         reloadCycles: function() {
             var that = this;
-            var oCyclesModel = this._oView.getModel("cycles");
             var oODataModel = this._oController.getOwnerComponent().getModel();
             var oListBinding = oODataModel.bindList("/Cycles", null, [], [
                 new Filter("IsActiveEntity", FilterOperator.EQ, true)
@@ -404,7 +388,6 @@ sap.ui.define([
                     that._oContextsById[oObj.ID] = oContext;
                 });
 
-                oCyclesModel.setProperty("/Cycles", aData);
                 that._aAllCycles = aData;
                 that._aAllCyclesUnfiltered = aData;
                 that._iCurrentPage = 1;

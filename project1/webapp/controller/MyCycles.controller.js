@@ -21,11 +21,6 @@ sap.ui.define([
             this._oService.destroy();
         },
 
-        // ---- navigation ----
-        onNavBack: function() {
-            this._oService.navBack();
-        },
-
         // ---- search ----
         onSearch: function() {
             this._oService.toggleSearch();
