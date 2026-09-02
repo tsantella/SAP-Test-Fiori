@@ -107,7 +107,7 @@
                                     <Column id="miStatusColumn6"><Text id="miStatusText6" text="Country" /></Column>
                                     <Column id="miStatusColumn7"><Text id="miStatusText7" text="Model Version" /></Column>
                                     <Column id="miStatusColumn8"><Text id="miStatusText8" text="Model" /></Column>
-                                    <Column id="miStatusColumn9"><Text id="miStatusText9" text="Propuls Type" /></Column>
+                                    <Column id="miStatusColumn9"><Text id="miStatusText9" text="Propulsion Type" /></Column>
                                     <Column id="miStatusColumn10"><Text id="miStatusText10" text="Development Code" /></Column>
                                     <Column id="miStatusColumn11"><Text id="miStatusText11" text="Platform" /></Column>
                                     <Column id="miStatusColumn12"><Text id="miStatusText12" text="Vehicle Segment" /></Column>
@@ -123,7 +123,7 @@
                                             <Text id="_miStatusItems1" text="{cycles>ModelStatus}" />
                                             <Text id="_miStatusItems2" text="{cycles>OE Group}" />
                                             <Text id="_miStatusItems3" text="{cycles>Brand}" />
-                                            <Text id="_miStatusItems4" text="{cycles>Sub Group}" />
+                                            <Text id="_miStatusItems4" text="{cycles>SubGroup}" />
                                             <Text id="_miStatusItems5" text="{cycles>Region}" />
                                             <Text id="_miStatusItems6" text="{cycles>Country}" />
                                             <Text id="_miStatusItems7" text="{cycles>ModelVersion}" />
@@ -234,12 +234,12 @@
                                     <Column id="kgStatusColumn1"><Text id="kgStatusText1" text="Model Status" /></Column>
                                     <Column id="kgStatusColumn2"><Text id="kgStatusText2" text="OE Group" /></Column>
                                     <Column id="kgStatusColumn3"><Text id="kgStatusText3" text="Brand" /></Column>
-                                    <Column id="kgStatusColumn4"><Text id="kgStatusText4" text="Sub Group" /></Column>
+                                    <Column id="kgStatusColumn4"><Text id="kgStatusText4" text="SubGroup" /></Column>
                                     <Column id="kgStatusColumn5"><Text id="kgStatusText5" text="Region" /></Column>
                                     <Column id="kgStatusColumn6"><Text id="kgStatusText6" text="Country" /></Column>
                                     <Column id="kgStatusColumn7"><Text id="kgStatusText7" text="Model Version" /></Column>
                                     <Column id="kgStatusColumn8"><Text id="kgStatusText8" text="Model" /></Column>
-                                    <Column id="kgStatusColumn9"><Text id="kgStatusText9" text="Propuls Type" /></Column>
+                                    <Column id="kgStatusColumn9"><Text id="kgStatusText9" text="Propulsion Type" /></Column>
                                     <Column id="kgStatusColumn10"><Text id="kgStatusText10" text="Development Code" /></Column>
                                     <Column id="kgStatusColumn11"><Text id="kgStatusText11" text="Platform" /></Column>
                                     <Column id="kgStatusColumn12"><Text id="kgStatusText12" text="Vehicle Segment" /></Column>
@@ -255,7 +255,7 @@
                                             <Text id="_kgStatusItems1" text="{cycles>ModelStatus}" />
                                             <Text id="_kgStatusItems2" text="{cycles>OE Group}" />
                                             <Text id="_kgStatusItems3" text="{cycles>Brand}" />
-                                            <Text id="_kgStatusItems4" text="{cycles>Sub Group}" />
+                                            <Text id="_kgStatusItems4" text="{cycles>SubGroup}" />
                                             <Text id="_kgStatusItems5" text="{cycles>Region}" />
                                             <Text id="_kgStatusItems6" text="{cycles>Country}" />
                                             <Text id="_kgStatusItems7" text="{cycles>ModelVersion}" />
@@ -371,7 +371,7 @@
                                     <Column id="klStatusColumn6"><Text id="klStatusText6" text="Country" /></Column>
                                     <Column id="klStatusColumn7"><Text id="klStatusText7" text="Model Version" /></Column>
                                     <Column id="klStatusColumn8"><Text id="klStatusText8" text="Model" /></Column>
-                                    <Column id="klStatusColumn9"><Text id="klStatusText9" text="Propuls Type" /></Column>
+                                    <Column id="klStatusColumn9"><Text id="klStatusText9" text="Propulsion Type" /></Column>
                                     <Column id="klStatusColumn10"><Text id="klStatusText10" text="Development Code" /></Column>
                                     <Column id="klStatusColumn11"><Text id="klStatusText11" text="Platform" /></Column>
                                     <Column id="klStatusColumn12"><Text id="klStatusText12" text="Vehicle Segment" /></Column>
@@ -387,7 +387,7 @@
                                             <Text id="_klStatusItems1" text="{cycles>ModelStatus}" />
                                             <Text id="_klStatusItems2" text="{cycles>OE Group}" />
                                             <Text id="_klStatusItems3" text="{cycles>Brand}" />
-                                            <Text id="_klStatusItems4" text="{cycles>Sub Group}" />
+                                            <Text id="_klStatusItems4" text="{cycles>SubGroup}" />
                                             <Text id="_klStatusItems5" text="{cycles>Region}" />
                                             <Text id="_klStatusItems6" text="{cycles>Country}" />
                                             <Text id="_klStatusItems7" text="{cycles>ModelVersion}" />
@@ -503,7 +503,7 @@
                                     <Column id="buStatusColumn6"><Text id="buStatusText6" text="Country" /></Column>
                                     <Column id="buStatusColumn7"><Text id="buStatusText7" text="Model Version" /></Column>
                                     <Column id="buStatusColumn8"><Text id="buStatusText8" text="Model" /></Column>
-                                    <Column id="buStatusColumn9"><Text id="buStatusText9" text="Propuls Type" /></Column>
+                                    <Column id="buStatusColumn9"><Text id="buStatusText9" text="Propulsion Type" /></Column>
                                     <Column id="buStatusColumn10"><Text id="buStatusText10" text="Development Code" /></Column>
                                     <Column id="buStatusColumn11"><Text id="buStatusText11" text="Platform" /></Column>
                                     <Column id="buStatusColumn12"><Text id="buStatusText12" text="Vehicle Segment" /></Column>
@@ -519,7 +519,7 @@
                                             <Text id="_buStatusItems1" text="{cycles>ModelStatus}" />
                                             <Text id="_buStatusItems2" text="{cycles>OE Group}" />
                                             <Text id="_buStatusItems3" text="{cycles>Brand}" />
-                                            <Text id="_buStatusItems4" text="{cycles>Sub Group}" />
+                                            <Text id="_buStatusItems4" text="{cycles>SubGroup}" />
                                             <Text id="_buStatusItems5" text="{cycles>Region}" />
                                             <Text id="_buStatusItems6" text="{cycles>Country}" />
                                             <Text id="_buStatusItems7" text="{cycles>ModelVersion}" />
@@ -635,7 +635,7 @@
                                     <Column id="regionStatusColumn6"><Text id="regionStatusText6" text="Country" /></Column>
                                     <Column id="regionStatusColumn7"><Text id="regionStatusText7" text="Model Version" /></Column>
                                     <Column id="regionStatusColumn8"><Text id="regionStatusText8" text="Model" /></Column>
-                                    <Column id="regionStatusColumn9"><Text id="regionStatusText9" text="Propuls Type" /></Column>
+                                    <Column id="regionStatusColumn9"><Text id="regionStatusText9" text="Propulsion Type" /></Column>
                                     <Column id="regionStatusColumn10"><Text id="regionStatusText10" text="Development Code" /></Column>
                                     <Column id="regionStatusColumn11"><Text id="regionStatusText11" text="Platform" /></Column>
                                     <Column id="regionStatusColumn12"><Text id="regionStatusText12" text="Vehicle Segment" /></Column>
@@ -651,7 +651,7 @@
                                             <Text id="_regionStatusItems1" text="{cycles>ModelStatus}" />
                                             <Text id="_regionStatusItems2" text="{cycles>OE Group}" />
                                             <Text id="_regionStatusItems3" text="{cycles>Brand}" />
-                                            <Text id="_regionStatusItems4" text="{cycles>Sub Group}" />
+                                            <Text id="_regionStatusItems4" text="{cycles>SubGroup}" />
                                             <Text id="_regionStatusItems5" text="{cycles>Region}" />
                                             <Text id="_regionStatusItems6" text="{cycles>Country}" />
                                             <Text id="_regionStatusItems7" text="{cycles>ModelVersion}" />

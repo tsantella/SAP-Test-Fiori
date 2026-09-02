@@ -109,6 +109,13 @@
           ]
         },
         {
+          "name": "RouteStatusModel",
+          "pattern": "statusmodel/{ModelVersion}",
+          "target": [
+            "TargetStatusModel"
+          ]
+        },
+        {
           "name": "RouteCycleModel",
           "pattern": "cyclemodel",
           "target": [
@@ -136,6 +143,10 @@
         "TargetStatus": {
           "id": "Status",
           "name": "Status"
+        },
+        "TargetStatusModel": {
+          "id": "StatusModel",
+          "name": "StatusModel"
         },
         "TargetCycleModel": {
           "id": "CycleModel",

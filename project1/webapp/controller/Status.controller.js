@@ -106,7 +106,9 @@ sap.ui.define(
         var oModelStatus;
         var oRegion;
         var oTable;
+        var sTableId;
 
+        // Determine which table is being searched
         if (sButtonId.includes("miFilterSearch")) {
           oModelVersionInput = this.byId("miModelVersionInput");
           oModelInput = this.byId("miModelInput");
@@ -114,7 +116,8 @@ sap.ui.define(
           oRegion = this.byId("miRegionInput");
 
           oTable = this.byId("miStatusTable");
-        } 
+          sTableId = "miStatusTable";
+        }
         else if (sButtonId.includes("kgFilterSearch")) {
           oModelVersionInput = this.byId("kgModelVersionInput");
           oModelInput = this.byId("kgModelInput");
@@ -122,6 +125,7 @@ sap.ui.define(
           oRegion = this.byId("kgRegionInput");
 
           oTable = this.byId("kgStatusTable");
+          sTableId = "kgStatusTable";
         }
         else if (sButtonId.includes("klFilterSearch")) {
           oModelVersionInput = this.byId("klModelVersionInput");
@@ -130,6 +134,7 @@ sap.ui.define(
           oRegion = this.byId("klRegionInput");
 
           oTable = this.byId("klStatusTable");
+          sTableId = "klStatusTable";
         }
         else if (sButtonId.includes("buFilterSearch")) {
           oModelVersionInput = this.byId("buModelVersionInput");
@@ -138,6 +143,7 @@ sap.ui.define(
           oRegion = this.byId("buRegionInput");
 
           oTable = this.byId("buStatusTable");
+          sTableId = "buStatusTable";
         }
         else if (sButtonId.includes("regionFilterSearch")) {
           oModelVersionInput = this.byId("regionModelVersionInput");
@@ -146,6 +152,7 @@ sap.ui.define(
           oRegion = this.byId("regionRegionInput");
 
           oTable = this.byId("regionStatusTable");
+          sTableId = "regionStatusTable";
         }
 
         if (!oTable) {
@@ -153,61 +160,101 @@ sap.ui.define(
           return;
         }
 
-        var sModelVersion = oModelVersionInput.getValue().trim();
-        var sModel = oModelInput.getValue().trim();
-        var sModelStatus = oModelStatus.getValue().trim();
-        var sRegion = oRegion.getValue().trim();
+        // Get search values
+        var sModelVersion = oModelVersionInput.getValue().trim().toLowerCase();
+        var sModel = oModelInput.getValue().trim().toLowerCase();
+        var sModelStatus = oModelStatus.getValue().trim().toLowerCase();
+        var sRegion = oRegion.getValue().trim().toLowerCase();
 
-        var oBinding = oTable.getBinding("items");
+        // Get the original dataset for this table
+        var aOriginalData;
 
-        if (!oBinding) {
-          return;
+        switch (sTableId) {
+          case "miStatusTable":
+            aOriginalData = this._aAllMarketingIntellegence;
+            break;
+
+          case "kgStatusTable":
+            aOriginalData = this._aAllKamGlobal;
+            break;
+
+          case "klStatusTable":
+            aOriginalData = this._aAllKamLocal;
+            break;
+
+          case "buStatusTable":
+            aOriginalData = this._aAllBusinessUnit;
+            break;
+
+          case "regionStatusTable":
+            aOriginalData = this._aAllRegion;
+            break;
+
+          default:
+            return;
         }
 
-        var aFilters = [];
+        // Filter the original dataset
+        var aFilteredData = aOriginalData.filter(function (oItem) {
+          var bModelVersion =
+            !sModelVersion ||
+            String(oItem.ModelVersion || "")
+              .toLowerCase()
+              .includes(sModelVersion);
 
-        if (sModelVersion) {
-          aFilters.push(
-            new sap.ui.model.Filter(
-              "ModelVersion",
-              sap.ui.model.FilterOperator.Contains,
-              sModelVersion,
-            ),
-          );
+          var bModel =
+            !sModel ||
+            String(oItem.Model || "")
+              .toLowerCase()
+              .includes(sModel);
+
+          var bModelStatus =
+            !sModelStatus ||
+            String(oItem.ModelStatus || "")
+              .toLowerCase()
+              .includes(sModelStatus);
+
+          var bRegion =
+            !sRegion ||
+            String(oItem.Region || "")
+              .toLowerCase()
+              .includes(sRegion);
+
+          return bModelVersion && bModel && bModelStatus && bRegion;
+        });
+
+        // Replace the pagination dataset with search results
+        switch (sTableId) {
+          case "miStatusTable":
+            this._aMarketingIntellegence = aFilteredData;
+            this._iMarketingIntellegence = 1;
+            break;
+
+          case "kgStatusTable":
+            this._aKamGlobal = aFilteredData;
+            this._iKamGlobal = 1;
+            break;
+
+          case "klStatusTable":
+            this._aKamLocal = aFilteredData;
+            this._iKamLocal = 1;
+            break;
+
+          case "buStatusTable":
+            this._aBusinessUnit = aFilteredData;
+            this._iBusinessUnit = 1;
+            break;
+
+          case "regionStatusTable":
+            this._aRegion = aFilteredData;
+            this._iRegion = 1;
+            break;
         }
 
-        if (sModel) {
-          aFilters.push(
-            new sap.ui.model.Filter(
-              "Model",
-              sap.ui.model.FilterOperator.Contains,
-              sModel,
-            ),
-          );
-        }
-
-        if (sModelStatus) {
-          aFilters.push(
-            new sap.ui.model.Filter(
-              "ModelStatus",
-              sap.ui.model.FilterOperator.Contains,
-              sModelStatus,
-            ),
-          );
-        }
-
-        if (sRegion) {
-          aFilters.push(
-            new sap.ui.model.Filter(
-              "Region",
-              sap.ui.model.FilterOperator.Contains,
-              sRegion,
-            ),
-          );
-        }
-
-        oBinding.filter(aFilters);
+        // Update table + pagination
+        this._updatePagination(sTableId);
       },
+
       onSearchClear: function (oEvent) {
         var oButton = oEvent.getSource();
         var sButtonId = oButton.getId();
@@ -268,11 +315,36 @@ sap.ui.define(
         oModelStatus.setValue("");
         oRegion.setValue("");
 
-        var oBinding = oTable.getBinding("items");
+        // Restore original data
+        switch (oTable.getId().split("--").pop()) {
+          case "miStatusTable":
+            this._aMarketingIntellegence = JSON.parse(JSON.stringify(this._aAllMarketingIntellegence));
+            this._iMarketingIntellegence = 1;
+            break;
 
-        if (oBinding) {
-          oBinding.filter([]);
+          case "kgStatusTable":
+            this._aKamGlobal = JSON.parse(JSON.stringify(this._aAllKamGlobal));
+            this._iKamGlobal = 1;
+            break;
+
+          case "klStatusTable":
+            this._aKamLocal = JSON.parse(JSON.stringify(this._aAllKamLocal));
+            this._iKamLocal = 1;
+            break;
+
+          case "buStatusTable":
+            this._aBusinessUnit = JSON.parse( JSON.stringify(this._aAllBusinessUnit));
+            this._iBusinessUnit = 1;
+            break;
+
+          case "regionStatusTable":
+            this._aRegion = JSON.parse(JSON.stringify(this._aAllRegion));
+            this._iRegion = 1;
+            break;
         }
+
+        // Reset pagination
+        this._updatePagination(oTable.getId().split("--").pop());
       },
       onCloseFilters: function (oEvent) {
         var oButton = oEvent.getSource();
@@ -346,11 +418,40 @@ sap.ui.define(
         oModelStatus.setValue("");
         oRegion.setValue("");
 
-        var oBinding = oTable.getBinding("items");
+        // Restore original data
+        switch (oTable.getId().split("--").pop()) {
+          case "miStatusTable":
+            this._aMarketingIntellegence = JSON.parse(
+              JSON.stringify(this._aAllMarketingIntellegence),
+            );
+            this._iMarketingIntellegence = 1;
+            break;
 
-        if (oBinding) {
-          oBinding.filter([]);
+          case "kgStatusTable":
+            this._aKamGlobal = JSON.parse(JSON.stringify(this._aAllKamGlobal));
+            this._iKamGlobal = 1;
+            break;
+
+          case "klStatusTable":
+            this._aKamLocal = JSON.parse(JSON.stringify(this._aAllKamLocal));
+            this._iKamLocal = 1;
+            break;
+
+          case "buStatusTable":
+            this._aBusinessUnit = JSON.parse(
+              JSON.stringify(this._aAllBusinessUnit),
+            );
+            this._iBusinessUnit = 1;
+            break;
+
+          case "regionStatusTable":
+            this._aRegion = JSON.parse(JSON.stringify(this._aAllRegion));
+            this._iRegion = 1;
+            break;
         }
+
+        // Reset pagination
+        this._updatePagination(oTable.getId().split("--").pop());
 
         oSearchButton.setEnabled(true);
         oFilterToolbar.setVisible(false);
@@ -375,6 +476,30 @@ sap.ui.define(
         if (!this._aSelectedRows) {
           this._aSelectedRows = [];
         }
+
+        var iCurrentTime = new Date().getTime();
+
+        if (
+          this._iLastClickTime &&
+          iCurrentTime - this._iLastClickTime < 300 &&
+          this._sLastClickedRow === sKey
+        ) {
+          // Double click detected
+          this._iLastClickTime = null;
+          this._sLastClickedRow = null;
+
+          var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+          this._clearSelection(oTable);
+          oRouter.navTo("RouteStatusModel", {
+            ModelVersion: sKey,
+          });
+
+          return;
+        }
+
+        // Store first click information
+        this._iLastClickTime = iCurrentTime;
+        this._sLastClickedRow = sKey;
 
         // If the same row is pressed again, deselect it
         if (
@@ -630,7 +755,14 @@ sap.ui.define(
         this._iBusinessUnit = 1;
         this._iRegion = 1;
 
-        // Complete datasets
+        // Complete original datasets
+        this._aAllMarketingIntellegence = [];
+        this._aAllKamGlobal = [];
+        this._aAllKamLocal = [];
+        this._aAllBusinessUnit = [];
+        this._aAllRegion = [];
+
+        // Data currently displayed/paginated
         this._aMarketingIntellegence = [];
         this._aKamGlobal = [];
         this._aKamLocal = [];
@@ -677,7 +809,14 @@ sap.ui.define(
           // Get complete dataset
           var aApprovalFlow = oCyclesModel.getProperty("/Status") || [];
 
-          // Keep complete datasets
+          // Keep original datasets
+          this._aAllMarketingIntellegence = JSON.parse(JSON.stringify(aApprovalFlow));
+          this._aAllKamGlobal = JSON.parse(JSON.stringify(aApprovalFlow));
+          this._aAllKamLocal = JSON.parse(JSON.stringify(aApprovalFlow));
+          this._aAllBusinessUnit = JSON.parse(JSON.stringify(aApprovalFlow));
+          this._aAllRegion = JSON.parse(JSON.stringify(aApprovalFlow));
+
+          // Initially, display everything
           this._aMarketingIntellegence = JSON.parse(JSON.stringify(aApprovalFlow));
           this._aKamGlobal = JSON.parse(JSON.stringify(aApprovalFlow));
           this._aKamLocal = JSON.parse(JSON.stringify(aApprovalFlow));
@@ -698,6 +837,33 @@ sap.ui.define(
           this._updatePagination("buStatusTable");
           this._updatePagination("regionStatusTable");
         });
+      },
+      _clearSelection: function (oTable) {
+        // If a table ID was passed instead of the table object
+        if (typeof oTable === "string") {
+          oTable = this.byId(oTable);
+        }
+
+        // Remove custom rowSelected class
+        if (oTable) {
+          var aItems = oTable.getItems();
+
+          aItems.forEach(function (oItem) {
+            oItem.removeStyleClass("rowSelected");
+          });
+
+          // Remove SAPUI5 selection if the table supports it
+          if (typeof oTable.removeSelections === "function") {
+            oTable.removeSelections(true);
+          }
+        }
+
+        // Clear selected row
+        this._aSelectedRows = [];
+
+        // Clear double-click tracking
+        this._iLastClickTime = null;
+        this._sLastClickedRow = null;
       },
     });
   },
