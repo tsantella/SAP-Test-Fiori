@@ -1,0 +1,35 @@
+<mvc:View controllerName="project1.controller.ApprovalFlowModel"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+    <Page id="ApprovalFlowModel" showHeader="false" class="cycleModelPage">
+        <content>
+            <VBox id="approvalFlowBox" >
+                <HBox id="approvalFlowHeaderBox" class="myCycleHeaderWrapper" alignItems="Center" justifyContent="SpaceBetween">
+                    <HBox id="_approvalHBox1" alignItems="Center">
+                        <FlexBox id="approvalFlowDetailTitleBadge" class="myCycleBadge" alignItems="Center" justifyContent="Center">
+                            <Text id="approvalFlowDetailTitleBadgeText" text="{i18n>Approval Flow Details}" class="myCycleBadgeText"/>
+                        </FlexBox>
+                    </HBox>
+                </HBox>
+                <VBox id="approvalFlowDetailCard" class="cycleDetailCard">
+                    <Text id="_approvalTitleText" text="{selectedApprovalFlow>/ModelVersion}" class="cycleDetailTitle"/>
+                    <Text id="_approvalCreatorText" text="Created by {selectedApprovalFlow>/CreatedBy}" class="cycleDetailSubtitle sapUiTinyMarginBottom"/>
+                    <core:HTML id="_approvalDivider" content="&lt;hr class=&quot;cycleDivider&quot;/&gt;"/>
+                    <HBox id="approvalStatusRow" class="sapUiMediumMarginTop" wrap="Wrap">
+                        <VBox id="_approvalCycleStatusBox" class="cycleDetailField">
+                            <Text id="_approvalLabelCycle" text="APPROVAL FLOW STATUS" class="cycleFieldLabel"/>
+                            <ObjectStatus id="_approvalStatusCycle"
+                                          text="{selectedApprovalFlow>/RequestStatus}"
+                                          state="{
+                                            path: 'selectedApprovalFlow>/RequestStatus',
+                                            formatter: '.formatApprovalFlowStatusState'
+                                          }" class="sapUiTinyMarginBottom"/>
+                        </VBox>
+                    </HBox>
+                </VBox>
+            </VBox>
+        </content>
+    </Page>
+
+</mvc:View>

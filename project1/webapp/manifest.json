@@ -106,6 +106,34 @@
           ]
         },
         {
+          "name": "RouteApprovalFlow",
+          "pattern": "approvalflow",
+          "target": [
+            "TargetApprovalFlow"
+          ]
+        },
+        {
+          "name": "RouteApprovalFlowModel",
+          "pattern": "approvalflowmodel",
+          "target": [
+            "TargetApprovalFlowModel"
+          ]
+        },
+        {
+          "name": "RouteStatus",
+          "pattern": "status",
+          "target": [
+            "TargetStatus"
+          ]
+        },
+        {
+          "name": "RouteStatusModel",
+          "pattern": "statusmodel/{ModelVersion}",
+          "target": [
+            "TargetStatusModel"
+          ]
+        },
+        {
           "name": "RouteCycleModel",
           "pattern": "cyclemodel",
           "target": [
@@ -121,6 +149,22 @@
         "TargetMyCycles": {
           "id": "MyCycles",
           "name": "MyCycles"
+        },
+        "TargetApprovalFlow": {
+          "id": "ApprovalFlow",
+          "name": "ApprovalFlow"
+        },
+        "TargetApprovalFlowModel": {
+          "id": "ApprovalFlowModel",
+          "name": "ApprovalFlowModel"
+        },
+        "TargetStatus": {
+          "id": "Status",
+          "name": "Status"
+        },
+        "TargetStatusModel": {
+          "id": "StatusModel",
+          "name": "StatusModel"
         },
         "TargetCycleModel": {
           "id": "CycleModel",

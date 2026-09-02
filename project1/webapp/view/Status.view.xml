@@ -1,0 +1,678 @@
+<mvc:View controllerName="project1.controller.Status"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+    <Page id="Status" showHeader="false" class="statusPage">
+        <content>
+            <VBox id="statusBox" class="statusBox">
+                <HBox id="StatusHeaderBox" class="myCycleHeaderWrapper" alignItems="Center" justifyContent="SpaceBetween">
+                    <HBox id="_statusHBox1" alignItems="Center">
+                        <FlexBox id="statusFlowDetailTitleBadge" class="myCycleBadge" alignItems="Center" justifyContent="Center">
+                            <Text id="statusFlowDetailTitleBadgeText" text="{i18n>Status}" class="myCycleBadgeText"/>
+                        </FlexBox>
+                    </HBox>
+                </HBox>
+                <VBox id="statusFlowDetailBox">
+                    <Toolbar id="marketingIntelligenceToolbar">
+                        <Text id="marketingText" text="For Review [Marketing Intelligence]" class="sapUiTinyMarginBegin"/>
+                        <ToolbarSpacer id="marketingIntelligenceToolbarSpacer"/>
+                        <Button id="marketingUncollapseButton" class="pillButtonRounded sapUiTinyMarginEnd" icon="sap-icon://add" press="onUncollapse"/>
+                        <Button id="marketingCollapseButton" class="pillButtonRounded sapUiTinyMarginEnd" icon="sap-icon://less" visible="false" press="onCollapse"/>
+                    </Toolbar>
+                    <VBox id="marketingIntelligenceBox" class="statusDetailBox" visible="false">
+                        <Toolbar id="marketingIntelligenceToolbar2" class="sapUiTinyMarginBottom">
+                            <Button id="statusSearch"
+                                text="{i18n>Search}"
+                                icon="sap-icon://search"
+                                press="statusSearch"
+                                class="pillButton pillButtonGrey"/>
+                            <ToolbarSpacer id="marketingIntelligenceToolbarSpacer2"/>
+                            <!-- Pagination -->
+                            <Button
+                                id="statusFirstPage"
+                                icon="sap-icon://media-rewind"
+                                type="Transparent"
+                                press="onFirstPage"
+                                enabled="false"
+                                tooltip="{i18n>firstPage}"/>
+                                <Button
+                                id="statusPreviousPage"
+                                icon="sap-icon://slim-arrow-left"
+                                type="Transparent"
+                                press="onPreviousPage"
+                                enabled="false"
+                                tooltip="Previous Page"/>
+
+                            <Text
+                                id="statusPaginationInfos"
+                                text="0 to 0 of 0"
+                                class="sapUiTinyMarginBeginEnd"/>
+
+                            <Button
+                                id="statusNextPage"
+                                icon="sap-icon://slim-arrow-right"
+                                type="Transparent"
+                                press="onNextPage"
+                                enabled="false"
+                                tooltip="Next Page"/>
+
+                            <Button
+                                id="statusLastPage"
+                                icon="sap-icon://media-forward"
+                                type="Transparent"
+                                press="onLastPage"
+                                enabled="false"
+                                tooltip="Last Page"/>
+                        </Toolbar>
+                        <Toolbar id="miFilterToolbar" visible="false">
+                            <Text id="miModelVersionFilterText" text="{i18n>Model Version}" class="FontTextBold"/>
+                            <Input id="miModelVersionInput" placeholder="{i18n>Search}" width="150px"  />
+                            <Text id="miModelFilterText" text="{i18n>Model}" class="FontTextBold"/>
+                            <Input id="miModelInput" placeholder="{i18n>Search}" width="150px" />
+                            <Text id="miModelStatus" text="{i18n>Model Status}" class="FontTextBold"/>
+                            <Input id="miModelStatusInput" placeholder="{i18n>Search}" width="150px" />
+                            <Text id="miRegion" text="{i18n>Region}" class="FontTextBold"/>
+                            <Input id="miRegionInput" placeholder="{i18n>Search}" width="150px" />
+                            <Button id="miFilterSearch"
+                                text="{i18n>Search}"
+                                icon="sap-icon://search"
+                                press="onSearchSubmit"
+                                class="pillButton pillButtonGrey"/>
+                            <Button id="miFilterClear"
+                                text="{i18n>Clear}"
+                                icon="sap-icon://delete"
+                                press="onSearchClear"
+                                class="pillButton pillButtonGrey"/>
+                            <Button id="miCloseFilters"
+                                text="{i18n>Close}"
+                                icon="sap-icon://decline"
+                                press="onCloseFilters"
+                                type="Reject"
+                                class="pillButton pillButtonRed"/>
+                        </Toolbar>
+                        <ScrollContainer
+                            id="miTableScroll"
+                            horizontal="true"
+                            vertical="false"
+                            width="100%">
+                            <Table id="miStatusTable"
+                                inset="false"
+                                width="2000px"
+                                items="{cycles>/MarketingIntellegence}">
+                                <columns>
+                                    <Column id="miStatusColumn1"><Text id="miStatusText1" text="Model Status" /></Column>
+                                    <Column id="miStatusColumn2"><Text id="miStatusText2" text="OE Group" /></Column>
+                                    <Column id="miStatusColumn3"><Text id="miStatusText3" text="Brand" /></Column>
+                                    <Column id="miStatusColumn4"><Text id="miStatusText4" text="Sub Group" /></Column>
+                                    <Column id="miStatusColumn5"><Text id="miStatusText5" text="Region" /></Column>
+                                    <Column id="miStatusColumn6"><Text id="miStatusText6" text="Country" /></Column>
+                                    <Column id="miStatusColumn7"><Text id="miStatusText7" text="Model Version" /></Column>
+                                    <Column id="miStatusColumn8"><Text id="miStatusText8" text="Model" /></Column>
+                                    <Column id="miStatusColumn9"><Text id="miStatusText9" text="Propulsion Type" /></Column>
+                                    <Column id="miStatusColumn10"><Text id="miStatusText10" text="Development Code" /></Column>
+                                    <Column id="miStatusColumn11"><Text id="miStatusText11" text="Platform" /></Column>
+                                    <Column id="miStatusColumn12"><Text id="miStatusText12" text="Vehicle Segment" /></Column>
+                                    <Column id="miStatusColumn13"><Text id="miStatusText13" text="SOP" /></Column>
+                                    <Column id="miStatusColumn14"><Text id="miStatusText14" text="EOP" /></Column>
+                                    <Column id="miStatusColumn15"><Text id="miStatusText15" text="Budget 2026" /></Column>
+                                    <Column id="miStatusColumn16"><Text id="miStatusText16" text="Last FC 2026" /></Column>
+                                    <Column id="miStatusColumn17"><Text id="miStatusText17" text="New Fc 2026" /></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem id="_miStatusColumnListItems" type="Active" press="onRowPress">
+                                        <cells>
+                                            <Text id="_miStatusItems1" text="{cycles>ModelStatus}" />
+                                            <Text id="_miStatusItems2" text="{cycles>OE Group}" />
+                                            <Text id="_miStatusItems3" text="{cycles>Brand}" />
+                                            <Text id="_miStatusItems4" text="{cycles>SubGroup}" />
+                                            <Text id="_miStatusItems5" text="{cycles>Region}" />
+                                            <Text id="_miStatusItems6" text="{cycles>Country}" />
+                                            <Text id="_miStatusItems7" text="{cycles>ModelVersion}" />
+                                            <Text id="_miStatusItems8" text="{cycles>Model}" />
+                                            <Text id="_miStatusItems9" text="{cycles>PropulsType}" />
+                                            <Text id="_miStatusItems10" text="{cycles>DevelopmentCode}" />
+                                            <Text id="_miStatusItems11" text="{cycles>Platform}" />
+                                            <Text id="_miStatusItems12" text="{cycles>VehicleSegment}" />
+                                            <Text id="_miStatusItems13" text="{cycles>SOP}" />
+                                            <Text id="_miStatusItems14" text="{cycles>EOP}" />
+                                            <Text id="_miStatusItems15" text="{cycles>Budget2026}" />
+                                            <Text id="_miStatusItems16" text="{cycles>LastFC2026}" />
+                                            <Text id="_miStatusItems17" text="{cycles>NewFC2026}" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </ScrollContainer>
+                    </VBox>  
+                    <!--KAMGLOBAL-->
+                    <Toolbar id="kamGlobalToolbar">
+                        <Text id="kamGlobalText" text="For Review [KAMGlobal]" class="sapUiTinyMarginBegin"/>
+                        <ToolbarSpacer id="kamGlobalToolbarSpacer"/>
+                        <Button id="kamGlobalUncollapseButton" class="pillButtonRounded sapUiTinyMarginEnd" icon="sap-icon://add" press="onUncollapse"/>
+                        <Button id="kamGlobalCollapseButton" class="pillButtonRounded sapUiTinyMarginEnd" icon="sap-icon://less" visible="false" press="onCollapse"/>
+                    </Toolbar>
+                    <VBox id="kamGlobalBox" class="statusDetailBox" visible="false">
+                        <Toolbar id="kamGlobalToolbar2" class="sapUiTinyMarginBottom">
+                            <Button id="kamGlobalStatusSearch"
+                                text="{i18n>Search}"
+                                icon="sap-icon://search"
+                                press="statusSearch"
+                                class="pillButton pillButtonGrey"/>
+                            <ToolbarSpacer id="kamGlobalToolbarSpacer2"/>
+                            <!-- Pagination -->
+                            <Button
+                                id="kamGlobalStatusFirstPage"
+                                icon="sap-icon://media-rewind"
+                                type="Transparent"
+                                press="onFirstPage"
+                                enabled="false"
+                                tooltip="{i18n>firstPage}"/>
+                                <Button
+                                id="kamGlobalStatusPreviousPage"
+                                icon="sap-icon://slim-arrow-left"
+                                type="Transparent"
+                                press="onPreviousPage"
+                                enabled="false"
+                                tooltip="Previous Page"/>
+
+                            <Text
+                                id="kamGlobalStatusPaginationInfos"
+                                text="0 to 0 of 0"
+                                class="sapUiTinyMarginBeginEnd"/>
+
+                            <Button
+                                id="kamGlobalStatusNextPage"
+                                icon="sap-icon://slim-arrow-right"
+                                type="Transparent"
+                                press="onNextPage"
+                                enabled="false"
+                                tooltip="Next Page"/>
+
+                            <Button
+                                id="kamGlobalStatusLastPage"
+                                icon="sap-icon://media-forward"
+                                type="Transparent"
+                                press="onLastPage"
+                                enabled="false"
+                                tooltip="Last Page"/>
+                        </Toolbar>
+                        <Toolbar id="kgFilterToolbar" visible="false">
+                            <Text id="kgModelVersionFilterText" text="{i18n>Model Version}" class="FontTextBold"/>
+                            <Input id="kgModelVersionInput" placeholder="{i18n>Search}" width="150px"  />
+                            <Text id="kgModelFilterText" text="{i18n>Model}" class="FontTextBold"/>
+                            <Input id="kgModelInput" placeholder="{i18n>Search}" width="150px" />
+                            <Text id="kgModelStatus" text="{i18n>Model Status}" class="FontTextBold"/>
+                            <Input id="kgModelStatusInput" placeholder="{i18n>Search}" width="150px" />
+                            <Text id="kgRegion" text="{i18n>Region}" class="FontTextBold"/>
+                            <Input id="kgRegionInput" placeholder="{i18n>Search}" width="150px" />
+                            <Button id="kgFilterSearch"
+                                text="{i18n>Search}"
+                                icon="sap-icon://search"
+                                press="onSearchSubmit"
+                                class="pillButton pillButtonGrey"/>
+                            <Button id="kgFilterClear"
+                                text="{i18n>Clear}"
+                                icon="sap-icon://delete"
+                                press="onSearchClear"
+                                class="pillButton pillButtonGrey"/>
+                            <Button id="kgCloseFilters"
+                                text="{i18n>Close}"
+                                icon="sap-icon://decline"
+                                press="onCloseFilters"
+                                type="Reject"
+                                class="pillButton pillButtonRed"/>
+                        </Toolbar>
+                        <ScrollContainer
+                            id="kgTableScroll"
+                            horizontal="true"
+                            vertical="false"
+                            width="100%">
+                            <Table id="kgStatusTable"
+                                inset="false"
+                                width="2000px"
+                                items="{cycles>/KamGlobal}">
+                                <columns>
+                                    <Column id="kgStatusColumn1"><Text id="kgStatusText1" text="Model Status" /></Column>
+                                    <Column id="kgStatusColumn2"><Text id="kgStatusText2" text="OE Group" /></Column>
+                                    <Column id="kgStatusColumn3"><Text id="kgStatusText3" text="Brand" /></Column>
+                                    <Column id="kgStatusColumn4"><Text id="kgStatusText4" text="SubGroup" /></Column>
+                                    <Column id="kgStatusColumn5"><Text id="kgStatusText5" text="Region" /></Column>
+                                    <Column id="kgStatusColumn6"><Text id="kgStatusText6" text="Country" /></Column>
+                                    <Column id="kgStatusColumn7"><Text id="kgStatusText7" text="Model Version" /></Column>
+                                    <Column id="kgStatusColumn8"><Text id="kgStatusText8" text="Model" /></Column>
+                                    <Column id="kgStatusColumn9"><Text id="kgStatusText9" text="Propulsion Type" /></Column>
+                                    <Column id="kgStatusColumn10"><Text id="kgStatusText10" text="Development Code" /></Column>
+                                    <Column id="kgStatusColumn11"><Text id="kgStatusText11" text="Platform" /></Column>
+                                    <Column id="kgStatusColumn12"><Text id="kgStatusText12" text="Vehicle Segment" /></Column>
+                                    <Column id="kgStatusColumn13"><Text id="kgStatusText13" text="SOP" /></Column>
+                                    <Column id="kgStatusColumn14"><Text id="kgStatusText14" text="EOP" /></Column>
+                                    <Column id="kgStatusColumn15"><Text id="kgStatusText15" text="Budget 2026" /></Column>
+                                    <Column id="kgStatusColumn16"><Text id="kgStatusText16" text="Last FC 2026" /></Column>
+                                    <Column id="kgStatusColumn17"><Text id="kgStatusText17" text="New Fc 2026" /></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem id="_kgStatusColumnListItems" type="Active" press="onRowPress">
+                                        <cells>
+                                            <Text id="_kgStatusItems1" text="{cycles>ModelStatus}" />
+                                            <Text id="_kgStatusItems2" text="{cycles>OE Group}" />
+                                            <Text id="_kgStatusItems3" text="{cycles>Brand}" />
+                                            <Text id="_kgStatusItems4" text="{cycles>SubGroup}" />
+                                            <Text id="_kgStatusItems5" text="{cycles>Region}" />
+                                            <Text id="_kgStatusItems6" text="{cycles>Country}" />
+                                            <Text id="_kgStatusItems7" text="{cycles>ModelVersion}" />
+                                            <Text id="_kgStatusItems8" text="{cycles>Model}" />
+                                            <Text id="_kgStatusItems9" text="{cycles>PropulsType}" />
+                                            <Text id="_kgStatusItems10" text="{cycles>DevelopmentCode}" />
+                                            <Text id="_kgStatusItems11" text="{cycles>Platform}" />
+                                            <Text id="_kgStatusItems12" text="{cycles>VehicleSegment}" />
+                                            <Text id="_kgStatusItems13" text="{cycles>SOP}" />
+                                            <Text id="_kgStatusItems14" text="{cycles>EOP}" />
+                                            <Text id="_kgStatusItems15" text="{cycles>Budget2026}" />
+                                            <Text id="_kgStatusItems16" text="{cycles>LastFC2026}" />
+                                            <Text id="_kgStatusItems17" text="{cycles>NewFC2026}" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </ScrollContainer>
+                    </VBox>
+                    <!--KAMLocal-->
+                    <Toolbar id="kamLocalToolbar">
+                        <Text id="kamLocalText" text="For Review [KAMLocal]" class="sapUiTinyMarginBegin"/>
+                        <ToolbarSpacer id="kamLocalToolbarSpacer"/>
+                        <Button id="kamLocalUncollapseButton" class="pillButtonRounded sapUiTinyMarginEnd" icon="sap-icon://add" press="onUncollapse"/>
+                        <Button id="kamLocalCollapseButton" class="pillButtonRounded sapUiTinyMarginEnd" icon="sap-icon://less" visible="false" press="onCollapse"/>
+                    </Toolbar>
+                    <VBox id="kamLocalBox" class="statusDetailBox" visible="false">
+                        <Toolbar id="kamLocalToolbar2" class="sapUiTinyMarginBottom">
+                            <Button id="kamLocalStatusSearch"
+                                text="{i18n>Search}"
+                                icon="sap-icon://search"
+                                press="statusSearch"
+                                class="pillButton pillButtonGrey"/>
+                            <ToolbarSpacer id="kamLocalToolbarSpacer2"/>
+                            <!-- Pagination -->
+                            <Button
+                                id="kamLocalStatusFirstPage"
+                                icon="sap-icon://media-rewind"
+                                type="Transparent"
+                                press="onFirstPage"
+                                enabled="false"
+                                tooltip="{i18n>firstPage}"/>
+                                <Button
+                                id="kamLocalStatusPreviousPage"
+                                icon="sap-icon://slim-arrow-left"
+                                type="Transparent"
+                                press="onPreviousPage"
+                                enabled="false"
+                                tooltip="Previous Page"/>
+
+                            <Text
+                                id="kamLocalStatusPaginationInfos"
+                                text="0 to 0 of 0"
+                                class="sapUiTinyMarginBeginEnd"/>
+
+                            <Button
+                                id="kamLocalStatusNextPage"
+                                icon="sap-icon://slim-arrow-right"
+                                type="Transparent"
+                                press="onNextPage"
+                                enabled="false"
+                                tooltip="Next Page"/>
+
+                            <Button
+                                id="kamLocalStatusLastPage"
+                                icon="sap-icon://media-forward"
+                                type="Transparent"
+                                press="onLastPage"
+                                enabled="false"
+                                tooltip="Last Page"/>
+                        </Toolbar>
+                        <Toolbar id="klFilterToolbar" visible="false">
+                            <Text id="klModelVersionFilterText" text="{i18n>Model Version}" class="FontTextBold"/>
+                            <Input id="klModelVersionInput" placeholder="{i18n>Search}" width="150px"  />
+                            <Text id="klModelFilterText" text="{i18n>Model}" class="FontTextBold"/>
+                            <Input id="klModelInput" placeholder="{i18n>Search}" width="150px" />
+                            <Text id="klModelStatus" text="{i18n>Model Status}" class="FontTextBold"/>
+                            <Input id="klModelStatusInput" placeholder="{i18n>Search}" width="150px" />
+                            <Text id="klRegion" text="{i18n>Region}" class="FontTextBold"/>
+                            <Input id="klRegionInput" placeholder="{i18n>Search}" width="150px" />
+                            <Button id="klFilterSearch"
+                                text="{i18n>Search}"
+                                icon="sap-icon://search"
+                                press="onSearchSubmit"
+                                class="pillButton pillButtonGrey"/>
+                            <Button id="klFilterClear"
+                                text="{i18n>Clear}"
+                                icon="sap-icon://delete"
+                                press="onSearchClear"
+                                class="pillButton pillButtonGrey"/>
+                            <Button id="klCloseFilters"
+                                text="{i18n>Close}"
+                                icon="sap-icon://decline"
+                                press="onCloseFilters"
+                                type="Reject"
+                                class="pillButton pillButtonRed"/>
+                        </Toolbar>
+                        <ScrollContainer
+                            id="klTableScroll"
+                            horizontal="true"
+                            vertical="false"
+                            width="100%">
+                            <Table id="klStatusTable"
+                                inset="false"
+                                width="2000px"
+                                items="{cycles>/KamLocal}">
+                                <columns>
+                                    <Column id="klStatusColumn1"><Text id="klStatusText1" text="Model Status" /></Column>
+                                    <Column id="klStatusColumn2"><Text id="klStatusText2" text="OE Group" /></Column>
+                                    <Column id="klStatusColumn3"><Text id="klStatusText3" text="Brand" /></Column>
+                                    <Column id="klStatusColumn4"><Text id="klStatusText4" text="Sub Group" /></Column>
+                                    <Column id="klStatusColumn5"><Text id="klStatusText5" text="Region" /></Column>
+                                    <Column id="klStatusColumn6"><Text id="klStatusText6" text="Country" /></Column>
+                                    <Column id="klStatusColumn7"><Text id="klStatusText7" text="Model Version" /></Column>
+                                    <Column id="klStatusColumn8"><Text id="klStatusText8" text="Model" /></Column>
+                                    <Column id="klStatusColumn9"><Text id="klStatusText9" text="Propulsion Type" /></Column>
+                                    <Column id="klStatusColumn10"><Text id="klStatusText10" text="Development Code" /></Column>
+                                    <Column id="klStatusColumn11"><Text id="klStatusText11" text="Platform" /></Column>
+                                    <Column id="klStatusColumn12"><Text id="klStatusText12" text="Vehicle Segment" /></Column>
+                                    <Column id="klStatusColumn13"><Text id="klStatusText13" text="SOP" /></Column>
+                                    <Column id="klStatusColumn14"><Text id="klStatusText14" text="EOP" /></Column>
+                                    <Column id="klStatusColumn15"><Text id="klStatusText15" text="Budget 2026" /></Column>
+                                    <Column id="klStatusColumn16"><Text id="klStatusText16" text="Last FC 2026" /></Column>
+                                    <Column id="klStatusColumn17"><Text id="klStatusText17" text="New Fc 2026" /></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem id="_klStatusColumnListItems" type="Active" press="onRowPress">
+                                        <cells>
+                                            <Text id="_klStatusItems1" text="{cycles>ModelStatus}" />
+                                            <Text id="_klStatusItems2" text="{cycles>OE Group}" />
+                                            <Text id="_klStatusItems3" text="{cycles>Brand}" />
+                                            <Text id="_klStatusItems4" text="{cycles>SubGroup}" />
+                                            <Text id="_klStatusItems5" text="{cycles>Region}" />
+                                            <Text id="_klStatusItems6" text="{cycles>Country}" />
+                                            <Text id="_klStatusItems7" text="{cycles>ModelVersion}" />
+                                            <Text id="_klStatusItems8" text="{cycles>Model}" />
+                                            <Text id="_klStatusItems9" text="{cycles>PropulsType}" />
+                                            <Text id="_klStatusItems10" text="{cycles>DevelopmentCode}" />
+                                            <Text id="_klStatusItems11" text="{cycles>Platform}" />
+                                            <Text id="_klStatusItems12" text="{cycles>VehicleSegment}" />
+                                            <Text id="_klStatusItems13" text="{cycles>SOP}" />
+                                            <Text id="_klStatusItems14" text="{cycles>EOP}" />
+                                            <Text id="_klStatusItems15" text="{cycles>Budget2026}" />
+                                            <Text id="_klStatusItems16" text="{cycles>LastFC2026}" />
+                                            <Text id="_klStatusItems17" text="{cycles>NewFC2026}" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </ScrollContainer>
+                    </VBox>
+                    <!--Business Unit-->
+                    <Toolbar id="buToolbar">
+                        <Text id="buText" text="For Review [Business Unit]" class="sapUiTinyMarginBegin"/>
+                        <ToolbarSpacer id="buToolbarSpacer"/>
+                        <Button id="buUncollapseButton" class="pillButtonRounded sapUiTinyMarginEnd" icon="sap-icon://add" press="onUncollapse"/>
+                        <Button id="buCollapseButton" class="pillButtonRounded sapUiTinyMarginEnd" icon="sap-icon://less" visible="false" press="onCollapse"/>
+                    </Toolbar>
+                    <VBox id="buBox" class="statusDetailBox" visible="false">
+                        <Toolbar id="buToolbar2" class="sapUiTinyMarginBottom">
+                            <Button id="buStatusSearch"
+                                text="{i18n>Search}"
+                                icon="sap-icon://search"
+                                press="statusSearch"
+                                class="pillButton pillButtonGrey"/>
+                            <ToolbarSpacer id="buToolbarSpacer2"/>
+                            <!-- Pagination -->
+                            <Button
+                                id="buStatusFirstPage"
+                                icon="sap-icon://media-rewind"
+                                type="Transparent"
+                                press="onFirstPage"
+                                enabled="false"
+                                tooltip="{i18n>firstPage}"/>
+                                <Button
+                                id="buStatusPreviousPage"
+                                icon="sap-icon://slim-arrow-left"
+                                type="Transparent"
+                                press="onPreviousPage"
+                                enabled="false"
+                                tooltip="Previous Page"/>
+
+                            <Text
+                                id="buStatusPaginationInfos"
+                                text="0 to 0 of 0"
+                                class="sapUiTinyMarginBeginEnd"/>
+
+                            <Button
+                                id="buStatusNextPage"
+                                icon="sap-icon://slim-arrow-right"
+                                type="Transparent"
+                                press="onNextPage"
+                                enabled="false"
+                                tooltip="Next Page"/>
+
+                            <Button
+                                id="buStatusLastPage"
+                                icon="sap-icon://media-forward"
+                                type="Transparent"
+                                press="onLastPage"
+                                enabled="false"
+                                tooltip="Last Page"/>
+                        </Toolbar>
+                        <Toolbar id="buFilterToolbar" visible="false">
+                            <Text id="buModelVersionFilterText" text="{i18n>Model Version}" class="FontTextBold"/>
+                            <Input id="buModelVersionInput" placeholder="{i18n>Search}" width="150px"  />
+                            <Text id="buModelFilterText" text="{i18n>Model}" class="FontTextBold"/>
+                            <Input id="buModelInput" placeholder="{i18n>Search}" width="150px" />
+                            <Text id="buModelStatus" text="{i18n>Model Status}" class="FontTextBold"/>
+                            <Input id="buModelStatusInput" placeholder="{i18n>Search}" width="150px" />
+                            <Text id="buRegion" text="{i18n>Region}" class="FontTextBold"/>
+                            <Input id="buRegionInput" placeholder="{i18n>Search}" width="150px" />
+                            <Button id="buFilterSearch"
+                                text="{i18n>Search}"
+                                icon="sap-icon://search"
+                                press="onSearchSubmit"
+                                class="pillButton pillButtonGrey"/>
+                            <Button id="buFilterClear"
+                                text="{i18n>Clear}"
+                                icon="sap-icon://delete"
+                                press="onSearchClear"
+                                class="pillButton pillButtonGrey"/>
+                            <Button id="buCloseFilters"
+                                text="{i18n>Close}"
+                                icon="sap-icon://decline"
+                                press="onCloseFilters"
+                                type="Reject"
+                                class="pillButton pillButtonRed"/>
+                        </Toolbar>
+                        <ScrollContainer
+                            id="buTableScroll"
+                            horizontal="true"
+                            vertical="false"
+                            width="100%">
+                            <Table id="buStatusTable"
+                                inset="false"
+                                width="2000px"
+                                items="{cycles>/BusinessUnit}">
+                                <columns>
+                                    <Column id="buStatusColumn1"><Text id="buStatusText1" text="Model Status" /></Column>
+                                    <Column id="buStatusColumn2"><Text id="buStatusText2" text="OE Group" /></Column>
+                                    <Column id="buStatusColumn3"><Text id="buStatusText3" text="Brand" /></Column>
+                                    <Column id="buStatusColumn4"><Text id="buStatusText4" text="Sub Group" /></Column>
+                                    <Column id="buStatusColumn5"><Text id="buStatusText5" text="Region" /></Column>
+                                    <Column id="buStatusColumn6"><Text id="buStatusText6" text="Country" /></Column>
+                                    <Column id="buStatusColumn7"><Text id="buStatusText7" text="Model Version" /></Column>
+                                    <Column id="buStatusColumn8"><Text id="buStatusText8" text="Model" /></Column>
+                                    <Column id="buStatusColumn9"><Text id="buStatusText9" text="Propulsion Type" /></Column>
+                                    <Column id="buStatusColumn10"><Text id="buStatusText10" text="Development Code" /></Column>
+                                    <Column id="buStatusColumn11"><Text id="buStatusText11" text="Platform" /></Column>
+                                    <Column id="buStatusColumn12"><Text id="buStatusText12" text="Vehicle Segment" /></Column>
+                                    <Column id="buStatusColumn13"><Text id="buStatusText13" text="SOP" /></Column>
+                                    <Column id="buStatusColumn14"><Text id="buStatusText14" text="EOP" /></Column>
+                                    <Column id="buStatusColumn15"><Text id="buStatusText15" text="Budget 2026" /></Column>
+                                    <Column id="buStatusColumn16"><Text id="buStatusText16" text="Last FC 2026" /></Column>
+                                    <Column id="buStatusColumn17"><Text id="buStatusText17" text="New Fc 2026" /></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem id="_buStatusColumnListItems" type="Active" press="onRowPress">
+                                        <cells>
+                                            <Text id="_buStatusItems1" text="{cycles>ModelStatus}" />
+                                            <Text id="_buStatusItems2" text="{cycles>OE Group}" />
+                                            <Text id="_buStatusItems3" text="{cycles>Brand}" />
+                                            <Text id="_buStatusItems4" text="{cycles>SubGroup}" />
+                                            <Text id="_buStatusItems5" text="{cycles>Region}" />
+                                            <Text id="_buStatusItems6" text="{cycles>Country}" />
+                                            <Text id="_buStatusItems7" text="{cycles>ModelVersion}" />
+                                            <Text id="_buStatusItems8" text="{cycles>Model}" />
+                                            <Text id="_buStatusItems9" text="{cycles>PropulsType}" />
+                                            <Text id="_buStatusItems10" text="{cycles>DevelopmentCode}" />
+                                            <Text id="_buStatusItems11" text="{cycles>Platform}" />
+                                            <Text id="_buStatusItems12" text="{cycles>VehicleSegment}" />
+                                            <Text id="_buStatusItems13" text="{cycles>SOP}" />
+                                            <Text id="_buStatusItems14" text="{cycles>EOP}" />
+                                            <Text id="_buStatusItems15" text="{cycles>Budget2026}" />
+                                            <Text id="_buStatusItems16" text="{cycles>LastFC2026}" />
+                                            <Text id="_buStatusItems17" text="{cycles>NewFC2026}" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </ScrollContainer>
+                    </VBox>
+                    <!--Region-->
+                    <Toolbar id="regionToolbar">
+                        <Text id="regionText" text="For Review [Region]" class="sapUiTinyMarginBegin"/>
+                        <ToolbarSpacer id="regionToolbarSpacer"/>
+                        <Button id="regionUncollapseButton" class="pillButtonRounded sapUiTinyMarginEnd" icon="sap-icon://add" press="onUncollapse"/>
+                        <Button id="regionCollapseButton" class="pillButtonRounded sapUiTinyMarginEnd" icon="sap-icon://less" visible="false" press="onCollapse"/>
+                    </Toolbar>
+                    <VBox id="regionBox" class="statusDetailBox" visible="false">
+                        <Toolbar id="regionToolbar2" class="sapUiTinyMarginBottom">
+                            <Button id="regionStatusSearch"
+                                text="{i18n>Search}"
+                                icon="sap-icon://search"
+                                press="statusSearch"
+                                class="pillButton pillButtonGrey"/>
+                            <ToolbarSpacer id="regionToolbarSpacer2"/>
+                            <!-- Pagination -->
+                            <Button
+                                id="regionStatusFirstPage"
+                                icon="sap-icon://media-rewind"
+                                type="Transparent"
+                                press="onFirstPage"
+                                enabled="false"
+                                tooltip="{i18n>firstPage}"/>
+                                <Button
+                                id="regionStatusPreviousPage"
+                                icon="sap-icon://slim-arrow-left"
+                                type="Transparent"
+                                press="onPreviousPage"
+                                enabled="false"
+                                tooltip="Previous Page"/>
+
+                            <Text
+                                id="regionStatusPaginationInfos"
+                                text="0 to 0 of 0"
+                                class="sapUiTinyMarginBeginEnd"/>
+
+                            <Button
+                                id="regionStatusNextPage"
+                                icon="sap-icon://slim-arrow-right"
+                                type="Transparent"
+                                press="onNextPage"
+                                enabled="false"
+                                tooltip="Next Page"/>
+
+                            <Button
+                                id="regionStatusLastPage"
+                                icon="sap-icon://media-forward"
+                                type="Transparent"
+                                press="onLastPage"
+                                enabled="false"
+                                tooltip="Last Page"/>
+                        </Toolbar>
+                        <Toolbar id="regionFilterToolbar" visible="false">
+                            <Text id="regionModelVersionFilterText" text="{i18n>Model Version}" class="FontTextBold"/>
+                            <Input id="regionModelVersionInput" placeholder="{i18n>Search}" width="150px"  />
+                            <Text id="regionModelFilterText" text="{i18n>Model}" class="FontTextBold"/>
+                            <Input id="regionModelInput" placeholder="{i18n>Search}" width="150px" />
+                            <Text id="regionModelStatus" text="{i18n>Model Status}" class="FontTextBold"/>
+                            <Input id="regionModelStatusInput" placeholder="{i18n>Search}" width="150px" />
+                            <Text id="regionRegion" text="{i18n>Region}" class="FontTextBold"/>
+                            <Input id="regionRegionInput" placeholder="{i18n>Search}" width="150px" />
+                            <Button id="regionFilterSearch"
+                                text="{i18n>Search}"
+                                icon="sap-icon://search"
+                                press="onSearchSubmit"
+                                class="pillButton pillButtonGrey"/>
+                            <Button id="regionFilterClear"
+                                text="{i18n>Clear}"
+                                icon="sap-icon://delete"
+                                press="onSearchClear"
+                                class="pillButton pillButtonGrey"/>
+                            <Button id="regionCloseFilters"
+                                text="{i18n>Close}"
+                                icon="sap-icon://decline"
+                                press="onCloseFilters"
+                                type="Reject"
+                                class="pillButton pillButtonRed"/>
+                        </Toolbar>
+                        <ScrollContainer
+                            id="regionTableScroll"
+                            horizontal="true"
+                            vertical="false"
+                            width="100%">
+                            <Table id="regionStatusTable"
+                                inset="false"
+                                width="2000px"
+                                items="{cycles>/Region}">
+                                <columns>
+                                    <Column id="regionStatusColumn1"><Text id="regionStatusText1" text="Model Status" /></Column>
+                                    <Column id="regionStatusColumn2"><Text id="regionStatusText2" text="OE Group" /></Column>
+                                    <Column id="regionStatusColumn3"><Text id="regionStatusText3" text="Brand" /></Column>
+                                    <Column id="regionStatusColumn4"><Text id="regionStatusText4" text="Sub Group" /></Column>
+                                    <Column id="regionStatusColumn5"><Text id="regionStatusText5" text="Region" /></Column>
+                                    <Column id="regionStatusColumn6"><Text id="regionStatusText6" text="Country" /></Column>
+                                    <Column id="regionStatusColumn7"><Text id="regionStatusText7" text="Model Version" /></Column>
+                                    <Column id="regionStatusColumn8"><Text id="regionStatusText8" text="Model" /></Column>
+                                    <Column id="regionStatusColumn9"><Text id="regionStatusText9" text="Propulsion Type" /></Column>
+                                    <Column id="regionStatusColumn10"><Text id="regionStatusText10" text="Development Code" /></Column>
+                                    <Column id="regionStatusColumn11"><Text id="regionStatusText11" text="Platform" /></Column>
+                                    <Column id="regionStatusColumn12"><Text id="regionStatusText12" text="Vehicle Segment" /></Column>
+                                    <Column id="regionStatusColumn13"><Text id="regionStatusText13" text="SOP" /></Column>
+                                    <Column id="regionStatusColumn14"><Text id="regionStatusText14" text="EOP" /></Column>
+                                    <Column id="regionStatusColumn15"><Text id="regionStatusText15" text="Budget 2026" /></Column>
+                                    <Column id="regionStatusColumn16"><Text id="regionStatusText16" text="Last FC 2026" /></Column>
+                                    <Column id="regionStatusColumn17"><Text id="regionStatusText17" text="New Fc 2026" /></Column>
+                                </columns>
+                                <items>
+                                    <ColumnListItem id="_regionStatusColumnListItems" type="Active" press="onRowPress">
+                                        <cells>
+                                            <Text id="_regionStatusItems1" text="{cycles>ModelStatus}" />
+                                            <Text id="_regionStatusItems2" text="{cycles>OE Group}" />
+                                            <Text id="_regionStatusItems3" text="{cycles>Brand}" />
+                                            <Text id="_regionStatusItems4" text="{cycles>SubGroup}" />
+                                            <Text id="_regionStatusItems5" text="{cycles>Region}" />
+                                            <Text id="_regionStatusItems6" text="{cycles>Country}" />
+                                            <Text id="_regionStatusItems7" text="{cycles>ModelVersion}" />
+                                            <Text id="_regionStatusItems8" text="{cycles>Model}" />
+                                            <Text id="_regionStatusItems9" text="{cycles>PropulsType}" />
+                                            <Text id="_regionStatusItems10" text="{cycles>DevelopmentCode}" />
+                                            <Text id="_regionStatusItems11" text="{cycles>Platform}" />
+                                            <Text id="_regionStatusItems12" text="{cycles>VehicleSegment}" />
+                                            <Text id="_regionStatusItems13" text="{cycles>SOP}" />
+                                            <Text id="_regionStatusItems14" text="{cycles>EOP}" />
+                                            <Text id="_regionStatusItems15" text="{cycles>Budget2026}" />
+                                            <Text id="_regionStatusItems16" text="{cycles>LastFC2026}" />
+                                            <Text id="_regionStatusItems17" text="{cycles>NewFC2026}" />
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </ScrollContainer>
+                    </VBox>
+                </VBox>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

@@ -21,7 +21,14 @@ sap.ui.define([
 
         onNavToMyCycles: function() {
             this._oService.navToMyCycles();
+        },
+        onNavToApprovalFlow: function() {
+            var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+            oRouter.navTo("RouteApprovalFlow");
+        },
+        onNavToStatus: function() {
+            var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+            oRouter.navTo("RouteStatus");
         }
-
     });
 });
