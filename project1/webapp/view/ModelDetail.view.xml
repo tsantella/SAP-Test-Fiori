@@ -1,0 +1,154 @@
+<mvc:View controllerName="project1.controller.ModelDetail"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:core="sap.ui.core"
+    xmlns="sap.m">
+
+    <Page id="ModelDetail" showHeader="false" class="modelDetailPage">
+        <content>
+            <VBox id="_IDGenDetailVBox">
+                <HBox id="detailActionRow" justifyContent="End" class="sapUiSmallMarginTop sapUiMediumMarginEnd">
+                    <Button id="btnAddPropulsionType" text="Add Propulsion Type" press=".onAddPropulsionType"
+                        class="pillButton pillButtonGreen sapUiTinyMarginEnd"/>
+                    <Button id="btnModelDetailSave" text="Save" press=".onSave"
+                        visible="{= ${ui>/mode} !== 'view'}"
+                        class="pillButton pillButtonGreen sapUiTinyMarginEnd"/>
+                    <Button id="btnModelDetailCancel" text="Cancel" press=".onCancel"
+                        visible="{= ${ui>/mode} !== 'view'}"
+                        class="pillButton pillButtonGrey"/>
+                    <Button id="btnCloseDetail" text="Close" press=".onClose"
+                        visible="{= ${ui>/mode} === 'view'}"
+                        class="pillButton pillButtonGrey"/>
+                </HBox>
+
+                <HBox id="detailFormRow" class="detailFormRow sapUiMediumMargin">
+                    <VBox id="detailFormColLeft" class="detailFormCol">
+                        <HBox id="rowModelVersion" alignItems="Center" class="detailFieldRow">
+                            <Label id="lblModelVersion" text="Model version" class="detailFieldLabel"/>
+                            <Input id="inpModelVersion" value="{selectedModel>/ModelVersion}"
+                                editable="{= ${ui>/mode} !== 'view'}" class="detailInput"/>
+                        </HBox>
+                        <HBox id="rowModel" alignItems="Center" class="detailFieldRow">
+                            <Label id="lblModel" text="Model" class="detailFieldLabel"/>
+                            <Input id="inpModel" value="{selectedModel>/Model}"
+                                editable="{= ${ui>/mode} !== 'view'}" class="detailInput"/>
+                        </HBox>
+                        <HBox id="rowOEGroup" alignItems="Center" class="detailFieldRow">
+                            <Label id="lblOEGroup" text="OE group" class="detailFieldLabel"/>
+                            <Input id="inpOEGroup" value="{selectedModel>/OEGroup}"
+                                editable="{= ${ui>/mode} !== 'view'}" class="detailInput"/>
+                        </HBox>
+                        <HBox id="rowBrand" alignItems="Center" class="detailFieldRow">
+                            <Label id="lblBrand" text="Brand" class="detailFieldLabel"/>
+                            <Select id="selBrand" selectedKey="{selectedModel>/Brand}"
+                                editable="{= ${ui>/mode} !== 'view'}"
+                                items="{dropdowns>/Brands}"
+                                class="detailInput">
+                                <core:Item id="_IDGenBrandItem" key="{dropdowns>}" text="{dropdowns>}"/>
+                            </Select>
+                        </HBox>
+                        <HBox id="rowSubGroup" alignItems="Center" class="detailFieldRow">
+                            <Label id="lblSubGroup" text="Sub Group" class="detailFieldLabel"/>
+                            <Select id="selSubGroup" selectedKey="{selectedModel>/SubGroup}"
+                                editable="{= ${ui>/mode} !== 'view'}"
+                                items="{dropdowns>/SubGroups}"
+                                class="detailInput">
+                                <core:Item id="_IDGenSubGroupItem" key="{dropdowns>}" text="{dropdowns>}"/>
+                            </Select>
+                        </HBox>
+                        <HBox id="rowRegion" alignItems="Center" class="detailFieldRow">
+                            <Label id="lblRegion" text="Region" class="detailFieldLabel"/>
+                            <Input id="inpRegion" value="{selectedModel>/Region}"
+                                editable="{= ${ui>/mode} !== 'view'}" class="detailInput"/>
+                        </HBox>
+                        <HBox id="rowCountry" alignItems="Center" class="detailFieldRow">
+                            <Label id="lblCountry" text="Country" class="detailFieldLabel"/>
+                            <Input id="inpCountry" value="{selectedModel>/Country}"
+                                editable="{= ${ui>/mode} !== 'view'}" class="detailInput"/>
+                        </HBox>
+                    </VBox>
+
+                    <VBox id="detailFormColRight" class="detailFormCol">
+                        <HBox id="rowIsActive" alignItems="Center" class="detailFieldRow">
+                            <Label id="lblIsActive" text="is active" class="detailFieldLabel"/>
+                            <RadioButtonGroup id="rbgIsActive" columns="2"
+                                editable="{= ${ui>/mode} !== 'view'}"
+                                selectedIndex="{= (${selectedModel>/Status} === 'INACTIVE' || ${selectedModel>/ModelStatus} === 'INACTIVE') ? 1 : 0}"
+                                select=".onActiveToggle"
+                                class="detailRadioGroup">
+                                <RadioButton id="rbYes" text="Yes"/>
+                                <RadioButton id="rbNo" text="No"/>
+                            </RadioButtonGroup>
+                        </HBox>
+                        <HBox id="rowPropulsionType" alignItems="Center" class="detailFieldRow">
+                            <Label id="lblPropulsionType" text="Propulsion type" class="detailFieldLabel"/>
+                            <Select id="selPropulsionType" selectedKey="{selectedModel>/PropulsionType}"
+                                editable="{= ${ui>/mode} !== 'view'}"
+                                items="{dropdowns>/PropulsionTypes}"
+                                class="detailInput">
+                                <core:Item id="_IDGenPropItem" key="{dropdowns>}" text="{dropdowns>}"/>
+                            </Select>
+                        </HBox>
+                        <HBox id="rowPlatform" alignItems="Center" class="detailFieldRow">
+                            <Label id="lblPlatform" text="Platform" class="detailFieldLabel"/>
+                            <Select id="selPlatform" selectedKey="{selectedModel>/Platform}"
+                                editable="{= ${ui>/mode} !== 'view'}"
+                                items="{dropdowns>/Platforms}"
+                                class="detailInput">
+                                <core:Item id="_IDGenPlatformItem" key="{dropdowns>}" text="{dropdowns>}"/>
+                            </Select>
+                            <Button id="btnAddPlatform" icon="sap-icon://add" type="Transparent"
+                                enabled="{= ${ui>/mode} !== 'view'}" class="detailInlineIconBtn sapUiTinyMarginBegin"/>
+                        </HBox>
+                        <HBox id="rowVehicleSegment" alignItems="Center" class="detailFieldRow">
+                            <Label id="lblVehicleSegment" text="Vehicle segment" class="detailFieldLabel"/>
+                            <Input id="inpVehicleSegment" value="{selectedModel>/VehicleSegment}"
+                                editable="{= ${ui>/mode} !== 'view'}" class="detailInput"/>
+                            <Button id="btnGoVehicleSegment" icon="sap-icon://arrow-right" type="Transparent"
+                                class="detailInlineIconBtn sapUiTinyMarginBegin"/>
+                        </HBox>
+                        <HBox id="rowDevelopmentCode" alignItems="Center" class="detailFieldRow">
+                            <Label id="lblDevelopmentCode" text="Development code" class="detailFieldLabel"/>
+                            <Input id="inpDevelopmentCode" value="{selectedModel>/DevelopmentCode}"
+                                editable="{= ${ui>/mode} !== 'view'}" class="detailInput"/>
+                        </HBox>
+                        <HBox id="rowSOP" alignItems="Center" class="detailFieldRow">
+                            <Label id="lblSOP" text="SOP" class="detailFieldLabel"/>
+                            <DatePicker id="dpSOP" value="{selectedModel>/SOP}"
+                                editable="{= ${ui>/mode} !== 'view'}" class="detailInput"/>
+                        </HBox>
+                        <HBox id="rowEOP" alignItems="Center" class="detailFieldRow">
+                            <Label id="lblEOP" text="EOP" class="detailFieldLabel"/>
+                            <DatePicker id="dpEOP" value="{selectedModel>/EOP}"
+                                editable="{= ${ui>/mode} !== 'view'}" class="detailInput"/>
+                        </HBox>
+                    </VBox>
+                </HBox>
+
+                <Table id="tblBudget" inset="false" items="{selectedModel>/BudgetRows}" class="sapUiMediumMarginBegin sapUiMediumMarginEnd sapUiSmallMarginTop">
+                    <columns>
+                        <Column id="_IDGenColYear"><Text id="_IDGenTxtColYear" text="Year"/></Column>
+                        <Column id="_IDGenColBudget"><Text id="_IDGenTxtColBudget" text="Budget"/></Column>
+                        <Column id="_IDGenColLastFC"><Text id="_IDGenTxtColLastFC" text="Last FC"/></Column>
+                        <Column id="_IDGenColNewFC"><Text id="_IDGenTxtColNewFC" text="New FC"/></Column>
+                        <Column id="_IDGenColLastIV"><Text id="_IDGenTxtColLastIV" text="Last IV"/></Column>
+                        <Column id="_IDGenColNewIV"><Text id="_IDGenTxtColNewIV" text="New IV"/></Column>
+                        <Column id="_IDGenColBudgetView"><Text id="_IDGenTxtColBudgetView" text="Budget View"/></Column>
+                    </columns>
+                    <items>
+                        <ColumnListItem id="_IDGenBudgetRow">
+                            <cells>
+                                <Text id="_IDGenTxtYear" text="{selectedModel>Year}"/>
+                                <Input id="_IDGenInpBudget" value="{selectedModel>Budget}" editable="{= ${ui>/mode} !== 'view'}"/>
+                                <Input id="_IDGenInpLastFC" value="{selectedModel>LastFC}" editable="{= ${ui>/mode} !== 'view'}"/>
+                                <Input id="_IDGenInpNewFC" value="{selectedModel>NewFC}" editable="{= ${ui>/mode} !== 'view'}"/>
+                                <Input id="_IDGenInpLastIV" value="{selectedModel>LastIV}" editable="{= ${ui>/mode} !== 'view'}"/>
+                                <Input id="_IDGenInpNewIV" value="{selectedModel>NewIV}" editable="{= ${ui>/mode} !== 'view'}"/>
+                                <Text id="_IDGenTxtBudgetView" text="{selectedModel>BudgetView}"/>
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+                </Table>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>

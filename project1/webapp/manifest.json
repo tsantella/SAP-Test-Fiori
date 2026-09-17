@@ -76,6 +76,9 @@
       "css": [
         {
           "uri": "css/style.css"
+        },
+        {
+          "uri": "css/modeldetail.css"
         }
       ]
     },
@@ -140,6 +143,20 @@
           "target": [
             "TargetCycleModel"
           ]
+        },
+		{
+    	  "name": "RouteModelsWithMe",
+          "pattern": "modelswithme",
+          "target": [
+            "TargetModelsWithMe"
+          ]
+        },
+        {
+          "name": "RouteModelDetail",
+          "pattern": "modeldetail",
+          "target": [
+            "TargetModelDetail"
+          ]
         }
       ],
       "targets": {
@@ -170,6 +187,14 @@
         "TargetCycleModel": {
           "id": "CycleModel",
           "name": "CycleModel"
+        },
+		"TargetModelsWithMe": {
+	      "id": "ModelsWithMe",
+	      "name": "ModelsWithMe"
+        },
+        "TargetModelDetail": {
+          "id": "ModelDetail",
+          "name": "ModelDetail"
         }
       }
     },
