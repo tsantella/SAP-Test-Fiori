@@ -1,11 +1,49 @@
 <mvc:View controllerName="project1.controller.View1"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m">
-    <Page id="page" title="{i18n>title}">
+
+    <Page id="page" title="{i18n>appTitle}" class="sapUiResponsiveContentPadding">
         <content>
-            <Button id="_IDGenButton" text="Go to My Cycles" press="onNavToMyCycles" />
-            <Button id="_ApprovalFlow" text="Approval Flow" press="onNavToApprovalFlow" />
-            <Button id="_Status" text="Status" press="onNavToStatus" />
-            </content>
+            <VBox class="sapUiSmallMarginTop">
+
+                <Title text="{i18n>homeWelcome}" level="H2" class="sapUiSmallMarginBottom"/>
+                <Text text="{i18n>homeIntro}" class="sapUiMediumMarginBottom"/>
+
+                <HBox wrap="Wrap">
+
+                    <GenericTile
+                        header="{i18n>MyCycles}"
+                        subheader="{i18n>homeTileMyCycles}"
+                        press="onNavToMyCycles"
+                        class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                        <TileContent>
+                            <ImageContent src="sap-icon://activity-items"/>
+                        </TileContent>
+                    </GenericTile>
+
+                    <GenericTile
+                        header="{i18n>ApprovalFlow}"
+                        subheader="{i18n>homeTileApprovalFlow}"
+                        press="onNavToApprovalFlow"
+                        class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                        <TileContent>
+                            <ImageContent src="sap-icon://workflow-tasks"/>
+                        </TileContent>
+                    </GenericTile>
+
+                    <GenericTile
+                        header="{i18n>Status}"
+                        subheader="{i18n>homeTileStatus}"
+                        press="onNavToStatus"
+                        class="sapUiTinyMarginEnd sapUiTinyMarginBottom">
+                        <TileContent>
+                            <ImageContent src="sap-icon://status-positive"/>
+                        </TileContent>
+                    </GenericTile>
+
+                </HBox>
+
+            </VBox>
+        </content>
     </Page>
 </mvc:View>

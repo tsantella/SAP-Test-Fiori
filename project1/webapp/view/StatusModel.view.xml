@@ -1,0 +1,45 @@
+<mvc:View controllerName = "project1.controller.StatusModel"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:core = "sap.ui.core" >
+    <Page id="StatusModel" showHeader="false" class="cycleModelPage">
+        <content>
+            <VBox id="statusModelBox">
+                <HBox id="statusModelHeaderBox" class="myCycleHeaderWrapper" alignItems="Center" justifyContent="SpaceBetween">
+                    <HBox id="statusDetailHbox" alignItems="Center">
+                        <FlexBox id="statusDetailTitleBadge" class="myCycleBadge" alignItems="Center" justifyContent="Center">
+                            <Text id="statusDetailTitleBadgeText" text="{i18n>Status Details}" class="myCycleBadgeText"/>
+                        </FlexBox>
+                    </HBox>
+                </HBox>
+                <VBox id="statusDetailCard" class="cycleDetailCard">
+                    <HBox id="statusTitleRow" width="100%" alignItems="Center" justifyContent="SpaceBetween"> 
+                        <VBox id="statusTitleBox"> 
+                            <Text id="statusTitleText" text="{selectedStatus>/ModelVersion}" class="cycleDetailTitle" /> 
+                            <Text id="statusDevCode" text="Development Code: {selectedStatus>/DevelopmentCode}" class="cycleDetailSubtitle sapUiTinyMarginBottom"/> 
+                        </VBox> 
+                        <ObjectStatus id="modelStatus" 
+                            text="{selectedStatus>/ModelStatus}"
+                            state="{
+                                path: 'selectedStatus>/ModelStatus',
+                                formatter: '.formatStatusModelState'
+                            }"
+                            class="sapUiTinyMarginBottom statusBold "
+                        /> 
+                    </HBox>
+                    <core:HTML id="statusDetailDivider" content="&lt;hr class=&quot;cycleDivider&quot;/&gt;"/>
+                    <Text id="statusBrand" text="{selectedStatus>/Brand}" class="cycleDetailTitle" />
+                    <Text id="statusModel" text="{selectedStatus>/Model}" class="cycleDetailSubtitle sapUiTinyMarginBottom"/>
+                    <VBox id="statusSubDetails" class="cycleDetailCard">
+                        <Text id="statusSubGroup" text="Sub Group: {selectedStatus>/SubGroup}" class="cycleDetailSubtitle sapUiTinyMarginBottom"/>
+                        <Text id="statusPrupType" text="Propulsion Type: {selectedStatus>/PropulsType}" class="cycleDetailSubtitle sapUiTinyMarginBottom"/>
+                        <Text id="statusSVSegment" text="Sub Group: {selectedStatus>/VehicleSegment}" class="cycleDetailSubtitle sapUiTinyMarginBottom"/>
+                        <Text id="statusPlatform" text="Platform: {selectedStatus>/Platform}" class="cycleDetailSubtitle sapUiTinyMarginBottom"/>
+                        
+                    </VBox>
+                    
+                </VBox>
+            </VBox>
+        </content>
+    </Page>
+</mvc:View>
