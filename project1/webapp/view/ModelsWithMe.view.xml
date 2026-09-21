@@ -86,20 +86,20 @@
                       <items>
                           <ColumnListItem id="_IDGenModelsColumnListItem" type="Active" press="onRowPress">
                               <cells>
-                                  <Text id="_IDGenTxtModelStatus" text="{models>ModelStatus}"/>
-                                  <Text id="_IDGenTxtOEGroupNr" text="{models>OEGroupNr}"/>
-                                  <Text id="_IDGenTxtOEGroup" text="{models>OEGroup}"/>
-                                  <Text id="_IDGenTxtBrandNr" text="{models>BrandNr}"/>
-                                  <Text id="_IDGenTxtBrand" text="{models>Brand}"/>
-                                  <Text id="_IDGenTxtSubGroup" text="{models>SubGroup}"/>
-                                  <Text id="_IDGenTxtRegion" text="{models>Region}"/>
-                                  <Text id="_IDGenTxtCountry" text="{models>Country}"/>
-                                  <Text id="_IDGenTxtModelVersion" text="{models>ModelVersion}"/>
-                                  <Text id="_IDGenTxtModel" text="{models>Model}"/>
-                                  <Text id="_IDGenTxtPropulsionType" text="{models>PropulsionType}"/>
-                                  <Text id="_IDGenTxtDevelopmentCode" text="{models>DevelopmentCode}"/>
-                                  <Text id="_IDGenTxtPlatformNr" text="{models>PlatformNr}"/>
-                                  <Text id="_IDGenTxtPlatform" text="{models>Platform}"/>
+                                  <Text id="_IDGenTxtModelStatus" text="{models>modelStatus}"/>
+                                  <Text id="_IDGenTxtOEGroupNr" text="{models>oeGroupNr}"/>
+                                  <Text id="_IDGenTxtOEGroup" text="{models>oeGroup}"/>
+                                  <Text id="_IDGenTxtBrandNr" text="{models>brandNr}"/>
+                                  <Text id="_IDGenTxtBrand" text="{models>brand}"/>
+                                  <Text id="_IDGenTxtSubGroup" text="{models>subGroup}"/>
+                                  <Text id="_IDGenTxtRegion" text="{models>region}"/>
+                                  <Text id="_IDGenTxtCountry" text="{models>country}"/>
+                                  <Text id="_IDGenTxtModelVersion" text="{models>modelVersion}"/>
+                                  <Text id="_IDGenTxtModel" text="{models>model}"/>
+                                  <Text id="_IDGenTxtPropulsionType" text="{models>propulsionType}"/>
+                                  <Text id="_IDGenTxtDevelopmentCode" text="{models>developmentCode}"/>
+                                  <Text id="_IDGenTxtPlatformNr" text="{models>platformNr}"/>
+                                  <Text id="_IDGenTxtPlatform" text="{models>platform}"/>
                               </cells>
                           </ColumnListItem>
                       </items>

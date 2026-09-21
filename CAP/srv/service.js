@@ -1,13 +1,13 @@
 const cds = require('@sap/cds');
 
-/**
- * CyclesService custom logic.
- *
- * Implements soft delete: a DELETE on an active Cycle does not remove the row,
- * it just flips `deleted` to 1. Soft-deleted rows are filtered out of every READ,
- * so from the outside the entity behaves like a normal deletable entity.
- */
-module.exports = cds.service.impl(function () {
+  /**
+   * CyclesService custom logic.
+   *
+   * Implements soft delete for both Cycles and Models: a DELETE does not remove
+   * the row, it just flips `deleted` to 1. Soft-deleted rows are filtered out of
+   * every READ, so from the outside each entity behaves like a normal deletable one.
+   */
+  module.exports = cds.service.impl(function () {
 
     // Hide soft-deleted rows from every read (list + by-key + navigation).
     this.before('READ', 'Cycles', (req) => {
@@ -26,4 +26,15 @@ module.exports = cds.service.impl(function () {
         await UPDATE('cycles.Cycles').set({ deleted: 1 }).where({ ID });
         // Fall through with no result -> CAP responds 204 No Content, like a real DELETE.
     });
-});
+
+    // Same soft-delete pattern for Models. Models isn't draft-enabled, so
+    // there's no IsActiveEntity branch to worry about - every DELETE here is real.
+    this.before('READ', 'Models', (req) => {
+        req.query.where('deleted = 0 or deleted is null');
+    });
+
+    this.on('DELETE', 'Models', async (req, next) => {
+        const { ID } = req.data;
+        await UPDATE('cycles.Models').set({ deleted: 1 }).where({ ID });
+    });
+  });

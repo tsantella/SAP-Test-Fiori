@@ -94,6 +94,16 @@ sap.ui.define([
                             row.removeStyleClass("rowSelected");
                         });
                     }
+                },
+                ondblclick: function(oEvent) {
+                    var oTable = that._byId("tblCycles");
+                    var bIsRowClick = oTable.getItems().some(function(row) {
+                        return row.getDomRef() && row.getDomRef().contains(oEvent.target);
+                    });
+                    if (bIsRowClick) {
+                        var oRouter = sap.ui.core.UIComponent.getRouterFor(that._oController);
+                        oRouter.navTo("RouteModelsWithMe");
+                    }
                 }
             });
         },
@@ -197,20 +207,9 @@ sap.ui.define([
             this._disableRowActions();
 
             if (this._oSelectedContext) {
-                var oSelectedData = this._oSelectedContext.getObject();
-
-                var oComponent = this._oController.getOwnerComponent();
-                var oSelectedModel = oComponent.getModel("selectedCycle");
-
-                if (!oSelectedModel) {
-                    oSelectedModel = new JSONModel();
-                    oComponent.setModel(oSelectedModel, "selectedCycle");
-                }
-                oSelectedModel.setData(oSelectedData);
-
                 var oRouter = sap.ui.core.UIComponent.getRouterFor(this._oController);
                 this._clearSelection();
-                oRouter.navTo("RouteCycleModel");
+                oRouter.navTo("RouteModelsWithMe");
             }
         },
 
