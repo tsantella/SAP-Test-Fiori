@@ -22,45 +22,43 @@ sap.ui.define(
         var oModelVersionInput = this.byId("modelVersionInput");
         var oModelInput = this.byId("modelInput");
 
-        var sModelVersion = oModelVersionInput.getValue().trim();
-        var sModel = oModelInput.getValue().trim();
+        var sModelVersion = oModelVersionInput.getValue().trim().toLowerCase();
+        var sModel = oModelInput.getValue().trim().toLowerCase();
 
         var oTable = this.byId("tbApprovalFlow");
 
         if (!oTable) {
-          sap.m.MessageToast.show("Table not found.");
+          MessageToast.show("Table not found.");
           return;
         }
 
-        var oBinding = oTable.getBinding("items");
+        // Always search from the complete original dataset
+        var aOriginalData = this._aAllCycles || [];
 
-        if (!oBinding) {
-          return;
-        }
+        var aFilteredData = aOriginalData.filter(function (oRow) {
+          var bModelVersion =
+            !sModelVersion ||
+            String(oRow.ModelVersion || "")
+              .toLowerCase()
+              .includes(sModelVersion);
 
-        var aFilters = [];
+          var bModel =
+            !sModel ||
+            String(oRow.Model || "")
+              .toLowerCase()
+              .includes(sModel);
 
-        if (sModelVersion) {
-          aFilters.push(
-            new sap.ui.model.Filter(
-              "ModelVersion",
-              sap.ui.model.FilterOperator.Contains,
-              sModelVersion,
-            ),
-          );
-        }
+          return bModelVersion && bModel;
+        });
 
-        if (sModel) {
-          aFilters.push(
-            new sap.ui.model.Filter(
-              "Model",
-              sap.ui.model.FilterOperator.Contains,
-              sModel,
-            ),
-          );
-        }
+        // Store filtered data
+        this._aAllRequests = aFilteredData;
 
-        oBinding.filter(aFilters);
+        // Always go back to page 1 after searching
+        this._iAllRequestCurrentPage = 1;
+
+        // Update table + pagination using filtered data
+        this._updatePagination("tbApprovalFlow");
       },
       onSearchClear: function () {
         var oModelVersionInput = this.byId("modelVersionInput");
@@ -69,33 +67,27 @@ sap.ui.define(
         oModelVersionInput.setValue("");
         oModelInput.setValue("");
 
-        var oTable = this.byId("tbApprovalFlow");
+        // Restore complete dataset
+        this._aAllRequests = JSON.parse(JSON.stringify(this._aAllCycles));
 
-        if (!oTable) {
-          return;
-        }
+        // Reset to first page
+        this._iAllRequestCurrentPage = 1;
 
-        var oBinding = oTable.getBinding("items");
-
-        if (!oBinding) {
-          return;
-        }
-
-        oBinding.filter([]);
+        // Rebuild table from complete dataset
+        this._updatePagination("tbApprovalFlow");
       },
       onCloseFilters: function () {
         this.byId("modelVersionInput").setValue("");
         this.byId("modelInput").setValue("");
 
-        var oTable = this.byId("tbApprovalFlow");
+        // Restore complete dataset
+        this._aAllRequests = JSON.parse(JSON.stringify(this._aAllCycles));
 
-        if (oTable) {
-          var oBinding = oTable.getBinding("items");
+        // Reset pagination
+        this._iAllRequestCurrentPage = 1;
 
-          if (oBinding) {
-            oBinding.filter([]);
-          }
-        }
+        // Update table
+        this._updatePagination("tbApprovalFlow");
 
         this.byId("filtersToolbar").setVisible(false);
         this.byId("allRequestsSearch").setEnabled(true);
@@ -720,7 +712,7 @@ sap.ui.define(
       _getPaginationConfig: function (sTableId) {
         var mPagination = {
           tbApprovalFlow: {
-            data: this._aAllCycles,
+            data: this._aAllRequests,
             currentPage: "_iAllRequestCurrentPage",
             modelPath: "/ApprovalFlow",
             infoId: "txtPaginationInfos",
@@ -912,6 +904,7 @@ sap.ui.define(
 
         // Complete datasets
         this._aAllCycles = [];
+        this._aAllRequests = [];
         this._aMyRequests = [];
         this._aNewRequests = [];
 
@@ -955,6 +948,7 @@ sap.ui.define(
 
           // Keep complete datasets
           this._aAllCycles = JSON.parse(JSON.stringify(aApprovalFlow));
+          this._aAllRequests = JSON.parse(JSON.stringify(aApprovalFlow));
           this._aMyRequests = JSON.parse(JSON.stringify(aApprovalFlow));
           this._aNewRequests = JSON.parse(JSON.stringify(aApprovalFlow));
 

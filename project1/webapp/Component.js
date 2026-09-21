@@ -14,17 +14,10 @@ sap.ui.define([
         },
 
         init() {
-            // call the base component's init function
             UIComponent.prototype.init.apply(this, arguments);
 
-            // set the device model
             this.setModel(models.createDeviceModel(), "device");
 
-            // Load sample JSON data
-            var oModel = new JSONModel(sap.ui.require.toUrl("project1/model/cycles.json"));
-            this.setModel(oModel, "cycles");
-
-            // enable routing
             this.getRouter().initialize();
         }
     });

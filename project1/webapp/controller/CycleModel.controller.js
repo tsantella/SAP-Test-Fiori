@@ -1,46 +1,38 @@
 sap.ui.define([
-  "sap/ui/core/mvc/Controller",
-  "sap/ui/core/library"
-], (BaseController, coreLibrary) => {
-  "use strict";
+    "sap/ui/core/mvc/Controller",
+    "project1/service/util/CycleModel.service"
+], function(Controller, CycleModelService) {
+    "use strict";
 
-  var ValueState = coreLibrary.ValueState;
+    /**
+     * CycleModel controller.
+     *
+     * Intentionally logic-free: route handling and formatting live in
+     * CycleModel.service. Formatters stay declared here only so the XML
+     * bindings can resolve them, and just delegate to the service.
+     */
+    return Controller.extend("project1.controller.CycleModel", {
 
-  return BaseController.extend("project1.controller.CycleModel", {
-      onInit: function() {
-        var oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-        oRouter.getRoute("RouteCycleModel").attachPatternMatched(this._onRouteMatched, this);
-      },
+        onInit: function() {
+            this._oService = new CycleModelService(this);
+            this._oService.init();
+        },
 
-      _onRouteMatched: function() {
-          var oComponent = this.getOwnerComponent();
-          var oSelectedModel = oComponent.getModel("selectedCycle");
+        onExit: function() {
+            this._oService.destroy();
+        },
 
-          if (oSelectedModel) {
-              this.getView().setModel(oSelectedModel, "selectedCycle");
-          }
-      },
+        onNavBack: function() {
+            this._oService.navBack();
+        },
 
-      onNavBack: function() {
-          window.history.go(-1);
-      },
+        formatCycleStatusState: function(sStatus) {
+            return this._oService.formatCycleStatusState(sStatus);
+        },
 
-      formatCycleStatusState: function(sStatus) {
-          switch (sStatus) {
-              case "Completed": return ValueState.Success;
-              case "WorkInProgress": return ValueState.Warning;
-              case "Stopped": return ValueState.Error;
-              default: return ValueState.None;
-          }
-      },
+        formatUploadStatusState: function(sStatus) {
+            return this._oService.formatUploadStatusState(sStatus);
+        }
 
-      formatUploadStatusState: function(sStatus) {
-          switch (sStatus) {
-              case "Finished": return ValueState.Success;
-              case "Pending": return ValueState.Warning;
-              case "Failed": return ValueState.Error;
-              default: return ValueState.None;
-          }
-      }
-  });
+    });
 });

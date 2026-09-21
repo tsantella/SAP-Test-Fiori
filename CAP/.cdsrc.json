@@ -1,0 +1,14 @@
+{
+  "requires": {
+    "db": {
+      "kind": "postgres",
+      "pool": {
+        "acquireTimeoutMillis": 20000,
+        "destroyTimeoutMillis": 5000
+      },
+      "credentials": {
+        "ssl": { "rejectUnauthorized": false }
+      }
+    }
+  }
+}
