@@ -3,8 +3,9 @@ sap.ui.define([
     "sap/ui/model/json/JSONModel",
     "sap/m/MessageToast",
     "sap/m/MessageBox",
-    "sap/ui/core/EventBus"
-], function (Controller, JSONModel, MessageToast, MessageBox, EventBus) {
+            "sap/ui/core/EventBus",
+            "sap/ui/core/BusyIndicator"
+], function (Controller, JSONModel, MessageToast, MessageBox, EventBus, BusyIndicator) {
     "use strict";
     return Controller.extend("project1.controller.ModelDetail", {
 
@@ -71,25 +72,99 @@ sap.ui.define([
             var oSelectedModel = this.getView().getModel("selectedModel");
             var oData = oSelectedModel.getData();
             var sMode = this.getView().getModel("ui").getProperty("/mode");
+            var oODataModel = this.getOwnerComponent().getModel();
+            var oPayload = this._toODataPayload(oData);
+            var that = this;
 
-            var oRecord = JSON.parse(JSON.stringify(oData));
-            var sOriginalKey = oRecord._originalKey;
-            delete oRecord._mode;
-            delete oRecord._originalKey;
+            BusyIndicator.show(0);
 
-            oRecord.Status = (oRecord.IsActiveIndex === 1) ? "INACTIVE" : "ACTIVE";
-            delete oRecord.IsActiveIndex;
+            this._saveModel(oODataModel, oData, sMode, oPayload).then(function () {
+                EventBus.getInstance().publish("app", "modelSaved", {
+                    mode: sMode,
+                    originalKey: oData.ID,
+                    record: oData
+                });
 
-            EventBus.getInstance().publish("app", "modelSaved", {
-                mode: sMode,
-                originalKey: sOriginalKey,
-                record: oRecord
+                MessageToast.show(sMode === "new" ? "Record created successfully." : "Changes saved successfully.");
+                that._sOriginalSnapshot = JSON.stringify(oData);
+                that._navigateBack();
+            }).catch(function (oError) {
+                MessageBox.error("Failed to save model: " + that._getErrorMessage(oError));
+            }).finally(function () {
+                BusyIndicator.hide();
+            });
+        },
+
+        _saveModel: function (oODataModel, oData, sMode, oPayload) {
+            var oContext;
+
+            if (sMode === "new") {
+                oContext = oODataModel.bindList("/Models").create(oPayload);
+                return oODataModel.submitBatch("$auto").then(function () {
+                    return oContext.created();
+                });
+            }
+
+            if (!oData._odataPath) {
+                return Promise.reject(new Error("The selected model has no database key."));
+            }
+
+            oContext = oODataModel.bindContext(oData._odataPath).getBoundContext();
+            Object.keys(oPayload).forEach(function (sProperty) {
+                oContext.setProperty(sProperty, oPayload[sProperty]);
             });
 
-            MessageToast.show(sMode === "new" ? "Record created successfully." : "Changes saved successfully.");
+            return oODataModel.submitBatch("$auto");
+        },
 
-            this._sOriginalSnapshot = JSON.stringify(oData);
-            this._navigateBack();
+        _toODataPayload: function (oData) {
+            var sStatus = oData.IsActiveIndex === 1 ? "INACTIVE" : "ACTIVE";
+
+            return {
+                modelStatus: sStatus,
+                modelStatus: sStatus,
+                oeGroupNr: oData.OEGroupNr || "",
+                oeGroup: oData.OEGroup || "",
+                brandNr: oData.BrandNr || "",
+                brand: oData.Brand || "",
+                subGroup: oData.SubGroup || "",
+                region: oData.Region || "",
+                country: oData.Country || "",
+                modelVersion: oData.ModelVersion || "",
+                model: oData.Model || "",
+                propulsionType: oData.PropulsionType || "",
+                developmentCode: oData.DevelopmentCode || "",
+                platformNr: oData.PlatformNr || "",
+                platform: oData.Platform || "",
+                vehicleSegment: oData.VehicleSegment || "",
+                sop: this._toDateValue(oData.SOP),
+                eop: this._toDateValue(oData.EOP),
+                deleted: 0
+            };
+        },
+
+        _toDateValue: function (vDate) {
+            if (!vDate) {
+                return null;
+            }
+
+            if (typeof vDate === "string" && /^\\d{4}-\\d{2}-\\d{2}$/.test(vDate)) {
+                return vDate;
+            }
+
+            var oDate = vDate instanceof Date ? vDate : new Date(vDate);
+            if (isNaN(oDate.getTime())) {
+                return null;
+            }
+
+            return oDate.toISOString().slice(0, 10);
+        },
+
+        _getErrorMessage: function (oError) {
+            if (oError && oError.cause && oError.cause.message) {
+                return oError.cause.message;
+            }
+            return oError && oError.message ? oError.message : "Unknown database error";
         },
 
         onCancel: function () {
