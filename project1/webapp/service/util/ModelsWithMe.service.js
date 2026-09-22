@@ -1,11 +1,12 @@
 sap.ui.define([
     "sap/ui/base/Object",
     "sap/ui/model/json/JSONModel",
+    "sap/ui/core/Fragment",
     "sap/m/MessageToast",
     "sap/m/MessageBox",
     "sap/ui/core/EventBus",
     "sap/ui/core/BusyIndicator"
-], function (BaseObject, JSONModel, MessageToast, MessageBox, EventBus, BusyIndicator) {
+], function (BaseObject, JSONModel, Fragment, MessageToast, MessageBox, EventBus, BusyIndicator) {
     "use strict";
 
     /**
@@ -33,6 +34,7 @@ sap.ui.define([
             this._oSelectedContext = null;
             this._oSelectedODataContext = null;
             this._oContextsById = {};
+            this._oImportDialog = null;
         },
 
         // ===================== lifecycle =====================
@@ -128,6 +130,10 @@ sap.ui.define([
         // listener doesn't linger and fire after the controller is gone.
         destroy: function () {
             EventBus.getInstance().unsubscribe("app", "modelSaved", this._onModelSaved, this);
+            if (this._oImportDialog) {
+                this._oImportDialog.destroy();
+                this._oImportDialog = null;
+            }
             BaseObject.prototype.destroy.apply(this, arguments);
         },
 
@@ -299,12 +305,13 @@ sap.ui.define([
                 if (!this._oSelectedContext) {
                     return;
                 }
-                oSelectedData = JSON.parse(JSON.stringify(this._oSelectedContext.getObject()));
+                oSelectedData = this._toDetailModel(this._oSelectedContext.getObject());
                 oSelectedData.BudgetRows = this._getMockBudgetRows();
+                oSelectedData._odataPath = this._oSelectedODataContext && this._oSelectedODataContext.getPath();
             }
 
             oSelectedData._mode = sMode;
-            oSelectedData._originalKey = oSelectedData.ModelVersion;
+            oSelectedData._originalKey = oSelectedData.ID;
 
             var oComponent = this._oController.getOwnerComponent();
             var oSelectedModel = oComponent.getModel("selectedModel");
@@ -318,6 +325,32 @@ sap.ui.define([
             var oRouter = oComponent.getRouter();
             this._clearSelection();
             oRouter.navTo("RouteModelDetail");
+        },
+
+        // Converts the lowercase property names returned by CAP into the
+        // uppercase names used by the existing detail form bindings.
+        _toDetailModel: function (oModel) {
+            return {
+                ID: oModel.ID,
+                Status: oModel.status || oModel.modelStatus || "ACTIVE",
+                ModelStatus: oModel.modelStatus || oModel.status || "ACTIVE",
+                ModelVersion: oModel.modelVersion || "",
+                Model: oModel.model || "",
+                OEGroup: oModel.oeGroup || "",
+                OEGroupNr: oModel.oeGroupNr || "",
+                Brand: oModel.brand || "",
+                BrandNr: oModel.brandNr || "",
+                SubGroup: oModel.subGroup || "",
+                Region: oModel.region || "",
+                Country: oModel.country || "",
+                PropulsionType: oModel.propulsionType || "",
+                Platform: oModel.platform || "",
+                PlatformNr: oModel.platformNr || "",
+                VehicleSegment: oModel.vehicleSegment || "",
+                DevelopmentCode: oModel.developmentCode || "",
+                SOP: oModel.sop || null,
+                EOP: oModel.eop || null
+            };
         },
 
         // Starts a blank record from the modeldetail.json template, with blank
@@ -350,36 +383,8 @@ sap.ui.define([
         // search filter so _aFilteredModels stays in sync - same reasoning as
         // _deleteSelectedModel - and refreshes the dropdown options and table,
         // preserving the current page unless it's no longer valid.
-        _onModelSaved: function (sChannel, sEvent, oData) {
-            if (!this._aAllModels) {
-                this._aAllModels = [];
-            }
-
-            var oRecord = this._populateDerivedFields(oData.record);
-
-            if (oData.mode === "edit") {
-                var iIndex = this._aAllModels.findIndex(function (oModel) {
-                    return oModel.ModelVersion === oData.originalKey;
-                });
-                if (iIndex > -1) {
-                    this._aAllModels[iIndex] = oRecord;
-                } else {
-                    this._aAllModels.push(oRecord);
-                }
-            } else if (oData.mode === "new") {
-                this._aAllModels.push(oRecord);
-            }
-
-            var sCurrentQuery = this._byId("sfModelsSearch").getValue();
-            this._aFilteredModels = this._getFilteredModels(sCurrentQuery);
-
-            var iTotalPages = this._getTotalPages();
-            if (this._iCurrentPage > iTotalPages) {
-                this._iCurrentPage = iTotalPages;
-            }
-
-            this._updatePage();
-            this._rebuildDropdownOptions();
+        _onModelSaved: function () {
+            return this.reloadModels();
         },
 
         // Fills in Status/ModelStatus and any missing Nr fields (OEGroupNr, BrandNr,
@@ -462,15 +467,251 @@ sap.ui.define([
             });
         },
 
-        // ===================== Toolbar button stubs =====================
-        // None of these have real logic yet - each is just wired to its button's
-        // press event in the view so the app doesn't error out. Replace the
-        // MessageToast.show(...) call with real behavior as each feature gets built.
+        // ===================== Import =====================
+    
 
         sendMultiple: function () { MessageToast.show("Send Multiple Models not implemented yet."); },
         sendAll: function () { MessageToast.show("Send All Models not implemented yet."); },
-        triggerImport: function () { MessageToast.show("Import not implemented yet."); },
-        exportExcel: function () { MessageToast.show("Export to Excel not implemented yet."); },
+        triggerImport: function () {
+            var that = this;
+
+            if (!this._oImportDialog) {
+                Fragment.load({
+                    id: this._oView.getId(),
+                    name: "project1.view.NewModelDialog",
+                    controller: this._oController
+                }).then(function (oDialog) {
+                    that._oImportDialog = oDialog;
+                    that._oView.addDependent(oDialog);
+                    oDialog.open();
+                });
+            } else {
+                this._oImportDialog.open();
+            }
+        },
+
+        triggerImportFilePicker: function () {
+            var oFileUploader = Fragment.byId(this._oView.getId(), "fuModelExcelImport");
+            oFileUploader.$().find("input[type=file]").trigger("click");
+        },
+
+        closeImportDialog: function () {
+            if (this._oImportDialog) {
+                this._oImportDialog.close();
+            }
+        },
+
+        createFromLast: function () {
+            if (!this._aAllModels.length) {
+                MessageBox.warning("No existing model to clone from.");
+                return;
+            }
+
+            var oLastModel = this._aAllModels[this._aAllModels.length - 1];
+            var oPayload = this._toODataImportPayload(oLastModel);
+            var that = this;
+
+            BusyIndicator.show(0);
+            this._createModels([oPayload]).then(function () {
+                that.closeImportDialog();
+                return that.reloadModels();
+            }).then(function () {
+                MessageToast.show("Model created from last!");
+            }).catch(function (oError) {
+                MessageBox.error("Failed to create model: " + oError.message);
+            }).finally(function () {
+                BusyIndicator.hide();
+            });
+        },
+
+        handleExcelFileSelected: function (oEvent) {
+            var oFileUploader = oEvent.getSource();
+            var oFile = oEvent.getParameter("files") && oEvent.getParameter("files")[0];
+
+            if (!oFile) {
+                return;
+            }
+
+            var that = this;
+            this._loadXlsx().then(function () {
+                return new Promise(function (resolve, reject) {
+                    var oReader = new FileReader();
+                    oReader.onload = function (oLoadEvent) {
+                        try {
+                            var oWorkbook = XLSX.read(new Uint8Array(oLoadEvent.target.result), { type: "array" });
+                            var oSheet = oWorkbook.Sheets[oWorkbook.SheetNames[0]];
+                            resolve(XLSX.utils.sheet_to_json(oSheet, { defval: "" }));
+                        } catch (oError) {
+                            reject(oError);
+                        }
+                    };
+                    oReader.onerror = function () { reject(new Error("Could not read the selected file.")); };
+                    oReader.readAsArrayBuffer(oFile);
+                });
+            }).then(function (aRows) {
+                if (!aRows.length) {
+                    throw new Error("The Excel file is empty or has no readable rows.");
+                }
+
+                var aPayloads = aRows.map(that._toODataImportPayload.bind(that));
+                return that._createModels(aPayloads).then(function () {
+                    that.closeImportDialog();
+                    return that.reloadModels();
+                }).then(function () {
+                    MessageToast.show(aPayloads.length + " model(s) imported successfully!");
+                });
+            }).catch(function (oError) {
+                MessageBox.error("Failed to import models: " + oError.message);
+            }).finally(function () {
+                oFileUploader.clear();
+                BusyIndicator.hide();
+            });
+
+            BusyIndicator.show(0);
+        },
+
+        _loadXlsx: function () {
+            if (this._xlsxReady) {
+                return this._xlsxReady;
+            }
+
+            this._xlsxReady = new Promise(function (resolve, reject) {
+                if (typeof XLSX !== "undefined") {
+                    resolve();
+                    return;
+                }
+                var oScript = document.createElement("script");
+                oScript.src = sap.ui.require.toUrl("project1/thirdparty/xlsx.full.min.js");
+                oScript.onload = resolve;
+                oScript.onerror = function () { reject(new Error("Failed to load Excel support.")); };
+                document.head.appendChild(oScript);
+            });
+            return this._xlsxReady;
+        },
+
+        _createModels: function (aPayloads) {
+            var oListBinding = this._oController.getOwnerComponent().getModel().bindList("/Models");
+            aPayloads.forEach(function (oPayload) {
+                oListBinding.create(oPayload);
+            });
+            return this._oController.getOwnerComponent().getModel().submitBatch("$auto");
+        },
+
+        _toODataImportPayload: function (oRow) {
+            var that = this;
+            function value() {
+                var aNames = Array.prototype.slice.call(arguments);
+                var sName = aNames.find(function (sKey) {
+                    return oRow[sKey] !== undefined && oRow[sKey] !== null && oRow[sKey] !== "";
+                });
+                return sName ? String(oRow[sName]).trim() : "";
+            }
+
+            var sStatus = value("Model Status", "modelStatus", "Status", "status") || "ACTIVE";
+            return {
+                modelStatus: sStatus,
+                status: sStatus,
+                oeGroupNr: value("OE grp Nr", "OE Group Nr", "oeGroupNr"),
+                oeGroup: value("OE Group", "oeGroup"),
+                brandNr: value("Brand nr", "Brand Nr", "brandNr"),
+                brand: value("Brand", "brand"),
+                subGroup: value("Sub group", "Sub Group", "subGroup"),
+                region: value("Region", "region"),
+                country: value("Country", "country"),
+                modelVersion: value("Model version", "Model Version", "modelVersion"),
+                model: value("Model", "model"),
+                propulsionType: value("Propuls type", "Propulsion type", "Propulsion Type", "propulsionType"),
+                developmentCode: value("Development code", "Development Code", "developmentCode"),
+                platformNr: value("Platform Nr", "Platforr Nr", "platformNr"),
+                platform: value("Platform", "platform"),
+                vehicleSegment: value("Vehicle segment", "Vehicle Segment", "vehicleSegment"),
+                sop: that._toDateValue(value("SOP", "sop")),
+                eop: that._toDateValue(value("EOP", "eop")),
+                deleted: 0
+            };
+        },
+
+        _toDateValue: function (vDate) {
+            if (!vDate) {
+                return null;
+            }
+
+            if (typeof vDate === "string" && /^\d{4}-\d{2}-\d{2}$/.test(vDate)) {
+                return vDate;
+            }
+
+            var oDate = vDate instanceof Date ? vDate : new Date(vDate);
+            return isNaN(oDate.getTime()) ? null : oDate.toISOString().slice(0, 10);
+        },
+
+        exportExcel: function () {
+            var aModels = this._aFilteredModels || [];
+
+            if (!aModels.length) {
+                MessageToast.show("There are no models to export.");
+                return;
+            }
+
+            var that = this;
+            BusyIndicator.show(0);
+
+            this._loadSpreadsheetExport().then(function (oExport) {
+                var oSpreadsheet = new oExport.Spreadsheet({
+                    workbook: {
+                        columns: that._getExportColumns(oExport.library)
+                    },
+                    dataSource: aModels,
+                    fileName: "Models_with_me.xlsx",
+                    worker: true
+                });
+
+                return oSpreadsheet.build().finally(function () {
+                    oSpreadsheet.destroy();
+                });
+            }).then(function () {
+                MessageToast.show(aModels.length + " model(s) exported successfully.");
+            }).catch(function (oError) {
+                MessageBox.error("Failed to export models: " + oError.message);
+            }).finally(function () {
+                BusyIndicator.hide();
+            });
+        },
+
+        _loadSpreadsheetExport: function () {
+            return new Promise(function (resolve, reject) {
+                sap.ui.require([
+                    "sap/ui/export/Spreadsheet",
+                    "sap/ui/export/library"
+                ], function (Spreadsheet, exportLibrary) {
+                    if (!Spreadsheet || !exportLibrary) {
+                        reject(new Error("SAPUI5 Excel export is unavailable."));
+                        return;
+                    }
+                    resolve({ Spreadsheet: Spreadsheet, library: exportLibrary });
+                }, reject);
+            });
+        },
+
+        _getExportColumns: function (oExportLibrary) {
+            var EdmType = oExportLibrary.EdmType;
+
+            return [
+                { label: "Model Status", property: "modelStatus", type: EdmType.String },
+                { label: "OE grp Nr", property: "oeGroupNr", type: EdmType.String },
+                { label: "OE Group", property: "oeGroup", type: EdmType.String },
+                { label: "Brand nr", property: "brandNr", type: EdmType.String },
+                { label: "Brand", property: "brand", type: EdmType.String },
+                { label: "Sub group", property: "subGroup", type: EdmType.String },
+                { label: "Region", property: "region", type: EdmType.String },
+                { label: "Country", property: "country", type: EdmType.String },
+                { label: "Model version", property: "modelVersion", type: EdmType.String },
+                { label: "Model", property: "model", type: EdmType.String },
+                { label: "Propuls type", property: "propulsionType", type: EdmType.String },
+                { label: "Development code", property: "developmentCode", type: EdmType.String },
+                { label: "Platform Nr", property: "platformNr", type: EdmType.String },
+                { label: "Platform", property: "platform", type: EdmType.String }
+            ];
+        },
 
         // ===================== Delete =====================
 

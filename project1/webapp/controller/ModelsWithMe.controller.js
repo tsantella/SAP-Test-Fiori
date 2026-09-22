@@ -62,6 +62,22 @@ sap.ui.define([
             this._oService.triggerImport();
         },
 
+        onCreateWithImport: function () {
+            this._oService.triggerImportFilePicker();
+        },
+
+        onCreateFromLast: function () {
+            this._oService.createFromLast();
+        },
+
+        onCancelNewModel: function () {
+            this._oService.closeImportDialog();
+        },
+
+        onExcelFileSelected: function (oEvent) {
+            this._oService.handleExcelFileSelected(oEvent);
+        },
+
         onExportExcel: function () {
             this._oService.exportExcel();
         },

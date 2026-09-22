@@ -1,0 +1,40 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+    xmlns:u="sap.ui.unified">
+
+    <Dialog id="dlgNewModel"
+            title="New Model"
+            contentWidth="420px"
+            resizable="false"
+            verticalScrolling="false"
+            horizontalScrolling="false"
+            class="newCycleDialog">
+        <content>
+            <VBox id="modelImportDialogContent" class="sapUiMediumMargin" alignItems="Center">
+                <Button id="btnCreateModelWithImport"
+                        text="Create data with import"
+                        type="Accept"
+                        press="onCreateWithImport"
+                        tooltip="Allows user to import an Excel file"
+                        class="pillButton pillButtonGreen sapUiTinyMarginBottom"
+                        width="260px"/>
+                <Button id="btnCreateModelFromLast"
+                        text="Create model from last"
+                        press="onCreateFromLast"
+                        class="pillButton pillButtonOrange"
+                        width="260px"/>
+                <u:FileUploader id="fuModelExcelImport"
+                        class="hiddenFileUploader"
+                        fileType="xlsx,xls"
+                        change="onExcelFileSelected"/>
+            </VBox>
+        </content>
+        <beginButton>
+            <Button id="btnCancelNewModel"
+                    text="Cancel"
+                    press="onCancelNewModel"
+                    class="pillButton pillButtonGrey"/>
+        </beginButton>
+    </Dialog>
+</core:FragmentDefinition>
