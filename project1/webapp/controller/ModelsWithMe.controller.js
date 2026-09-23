@@ -26,6 +26,10 @@ sap.ui.define([
             this._oService.selectRow(oEvent);
         },
 
+        onSelectionChange: function (oEvent) {
+            this._oService.selectRows(oEvent);
+        },
+
         // ---- search ----
         onSearch: function () {
             this._oService.toggleSearch();
