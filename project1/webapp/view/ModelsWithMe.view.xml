@@ -66,7 +66,8 @@
                        CSS class (min-width, see style.css) is what forces horizontal
                        scroll on narrow screens instead of squeezing all 14 columns down
                        to unreadable widths - a fixed width alone can't do both at once. -->
-                  <Table id="tblModels" inset="false" width="100%" class="modelsTableMinWidth" items="{models>/Models}">
+                  <Table id="tblModels" inset="false" width="100%" mode="MultiSelect"
+                      selectionChange="onSelectionChange" class="modelsTableMinWidth" items="{models>/Models}">
                       <columns>
                           <Column id="_IDGenColModelStatus"><Text id="_IDGenTxtColModelStatus" text="Model Status"/></Column>
                           <Column id="_IDGenColOEGroupNr"><Text id="_IDGenTxtColOEGroupNr" text="OE grp Nr"/></Column>

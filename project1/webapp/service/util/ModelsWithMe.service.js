@@ -33,29 +33,20 @@ sap.ui.define([
             this._aFilteredModels = [];
             this._oSelectedContext = null;
             this._oSelectedODataContext = null;
+            this._aSelectedODataContexts = [];
             this._oContextsById = {};
             this._oImportDialog = null;
         },
 
         // ===================== lifecycle =====================
 
-        // Called from controller onInit. Sets up pagination state, loads the
-        // model data, loads the defaults the Edit/New/View detail screen needs,
-        // and wires up the "click outside the table" deselect + double-click-to-
-        // view behavior.
         init: function () {
             var oModelsModel = new JSONModel({ Models: [] });
             this._oView.setModel(oModelsModel, "models");
 
             this.reloadModels();
 
-            
-
-            // Loads the static defaults the Edit/New/View detail screen needs (a
-            // blank model template, mock budget rows, the year range, and the
-            // default status) from modeldetail.json. onEdit/onNew/the double-click
-            // handler all wait on this promise before opening the detail screen,
-            // so those defaults are guaranteed to be ready by the time it needs them.
+            // Loads the static defaults the Edit/New/View detail screen needs 
             this._pDefaultsLoaded = new Promise((resolve) => {
                 var oDefaultsModel = new JSONModel();
                 var sDefaultsPath = sap.ui.require.toUrl("project1/model/modeldetail.json");
@@ -72,41 +63,17 @@ sap.ui.define([
             // Listen for saves coming back from the detail (Edit/New) screen
             EventBus.getInstance().subscribe("app", "modelSaved", this._onModelSaved, this);
 
-            // Click outside the table deselects the current row; double-click
-            // opens the record for viewing (read-only)
-            var oPage = this._byId("ModelsWithMe");
-            oPage.addEventDelegate({
-                onclick: (oEvent) => {
-                    var oTable = this._byId("tblModels");
-                    var sTargetId = oEvent.target.id;
-
-                    if (sTargetId.includes("btnModelsEdit") || sTargetId.includes("btnModelsDelete")) {
-                        return; // exit early with no value - let the Edit/Delete button's own press handler run instead of deselecting
-                    }
-
-                    // True if the click landed inside one of the table's rows;
-                    // used right below to decide whether to clear the selection.
-                    var bIsRowClick = oTable.getItems().some((row) => {
-                        return row.getDomRef() && row.getDomRef().contains(oEvent.target);
-                    });
-
-                    if (!bIsRowClick) {
-                        this._clearSelection();
-                    }
-                },
-
-                // Double-click ONLY opens the record for viewing (read-only)
+            // Keep preview handling on the table itself so double-clicks on any
+            // cell are detected consistently, independent of page bubbling.
+            var oTable = this._byId("tblModels");
+            oTable.addEventDelegate({
                 ondblclick: (oEvent) => {
-                    var oTable = this._byId("tblModels");
-
-                    var bIsRowClick = oTable.getItems().some((row) => {
-                        return row.getDomRef() && row.getDomRef().contains(oEvent.target)
+                    var oRow = oTable.getItems().find(function (oItem) {
+                        return oItem.getDomRef() && oItem.getDomRef().contains(oEvent.target);
                     });
 
-                    if (bIsRowClick) {
-                        this._pDefaultsLoaded.then(() => {
-                            this._openModelDetail("view");
-                        });
+                    if (oRow) {
+                        this._openPreviewForItem(oRow);
                     }
                 }
             });
@@ -177,20 +144,48 @@ sap.ui.define([
             var oItem = oEvent.getSource();
             var oTable = this._byId("tblModels");
 
-            oTable.getItems().forEach(function (row) {
-                row.removeStyleClass("rowSelected");
+            oTable.removeSelections(true);
+            oTable.setSelectedItem(oItem, true);
+            this._updateSelection([oItem]);
+        },
+
+        _openPreviewForItem: function (oItem) {
+            var oTable = this._byId("tblModels");
+            this._clearSelection();
+            oTable.setSelectedItem(oItem, true);
+            this._updateSelection([oItem]);
+            this._pDefaultsLoaded.then(() => {
+                this._openModelDetail("view");
             });
-            oItem.addStyleClass("rowSelected");
+        },
 
-            this._oSelectedContext = oItem.getBindingContext("models");
+        selectRows: function () {
+            var oTable = this._byId("tblModels");
+            this._updateSelection(oTable.getSelectedItems());
+        },
 
-            this._byId("btnModelsEdit").setEnabled(true);
-            this._byId("btnModelsDelete").setEnabled(true);
+        _updateSelection: function (aSelectedItems) {
+            var that = this;
+            var oTable = this._byId("tblModels");
 
-            if (this._oSelectedContext) {
-                var oSelectedData = this._oSelectedContext.getObject();
-                this._oSelectedODataContext = this._oContextsById[oSelectedData.ID];
-            }
+            oTable.getItems().forEach(function (row) {
+                row.toggleStyleClass("rowSelected", aSelectedItems.indexOf(row) !== -1);
+            });
+
+            this._aSelectedODataContexts = aSelectedItems.map(function (oItem) {
+                var oData = oItem.getBindingContext("models").getObject();
+                return that._oContextsById[oData.ID];
+            }).filter(Boolean);
+
+            this._oSelectedContext = aSelectedItems.length === 1
+                ? aSelectedItems[0].getBindingContext("models")
+                : null;
+            this._oSelectedODataContext = this._aSelectedODataContexts.length === 1
+                ? this._aSelectedODataContexts[0]
+                : null;
+
+            this._byId("btnModelsEdit").setEnabled(aSelectedItems.length === 1);
+            this._byId("btnModelsDelete").setEnabled(aSelectedItems.length > 0);
         },
 
         // Undoes selectRow: removes the highlight from every row and disables
@@ -202,6 +197,8 @@ sap.ui.define([
             });
             this._oSelectedContext = null;
             this._oSelectedODataContext = null;
+            this._aSelectedODataContexts = [];
+            oTable.removeSelections(true);
             this._byId("btnModelsEdit").setEnabled(false);
             this._byId("btnModelsDelete").setEnabled(false);
         },
@@ -275,6 +272,13 @@ sap.ui.define([
         // Opens the detail screen in edit mode for the selected row, once the
         // detail screen's defaults (blank template, budget rows, years) are loaded.
         openEdit: function () {
+            var oTable = this._byId("tblModels");
+            var aSelectedItems = oTable.getSelectedItems();
+
+            if (!this._oSelectedContext && aSelectedItems.length === 1) {
+                this._updateSelection(aSelectedItems);
+            }
+
             if (this._oSelectedContext) {
                 this._pDefaultsLoaded.then(() => {
                     this._openModelDetail("edit");
@@ -291,11 +295,6 @@ sap.ui.define([
             });
         },
 
-        // Builds the record to show on the detail screen (blank for "new", a deep
-        // copy of the selected row plus mock budget rows otherwise), stashes it on
-        // a shared "selectedModel" Component model, and navigates to the detail
-        // route. sMode ("view"/"edit"/"new") travels along on the record itself so
-        // the detail screen knows which mode to render in.
         _openModelDetail: function (sMode) {
             var oSelectedData;
 
@@ -377,19 +376,10 @@ sap.ui.define([
             });
         },
 
-        // Fires when the detail screen publishes "modelSaved" on the EventBus
-        // (after Save is confirmed). Updates the existing row (edit mode) or
-        // appends a new one (new mode) in _aAllModels, then re-runs the current
-        // search filter so _aFilteredModels stays in sync - same reasoning as
-        // _deleteSelectedModel - and refreshes the dropdown options and table,
-        // preserving the current page unless it's no longer valid.
         _onModelSaved: function () {
             return this.reloadModels();
         },
 
-        // Fills in Status/ModelStatus and any missing Nr fields (OEGroupNr, BrandNr,
-        // PlatformNr) on a record before it's saved, so hand-typed values in the
-        // Edit/New form always end up with consistent derived data.
         _populateDerivedFields: function (oRecord) {
             var sStatus = oRecord.Status || oRecord.ModelStatus || this._sDefaultStatus;
             oRecord.Status = sStatus;
@@ -714,61 +704,50 @@ sap.ui.define([
         },
 
         // ===================== Delete =====================
-
-        // Fires when the Delete button is pressed. Confirms with the user before
-        // actually removing anything. Note: UI5's MessageBox.Action enum has no
-        // built-in DELETE constant (only OK/CANCEL/YES/NO/RETRY/IGNORE/ABORT/CLOSE),
-        // so a custom "Delete" string label is used for the affirmative action -
-        // same pattern used for the detail screen's Save confirmation.
         deleteSelected: function () {
-            if (!this._oSelectedContext) return;
+            var iSelectedCount = this._aSelectedODataContexts.length;
+            if (!iSelectedCount) return;
 
             var that = this;
-            var oSelectedData = this._oSelectedContext.getObject();
             MessageBox.confirm(
-                "Are you sure you want to delete \"" + oSelectedData.model + "\"?",
+                "Are you sure you want to delete " + iSelectedCount + " selected model(s)?",
                 {
-                    title: "Delete Model",
+                    title: "Delete Models",
                     actions: ["Delete", MessageBox.Action.CANCEL],
                     emphasizedAction: "Delete",
                     onClose: function (sAction) {
-                        if (sAction === "Delete") that._deleteSelectedModel();
+                        if (sAction === "Delete") that._deleteSelectedModels();
                     }
                 }
             );
         },
 
-        // Soft-deletes the selected model via the real OData service (the
-        // backend flips `deleted` to 1 rather than removing the row - see
-        // CAP/srv/service.js), then reloads the list from the database so the
-        // UI reflects the true server state.
-        _deleteSelectedModel: function () {
+    
+        _deleteSelectedModels: function () {
             var that = this;
+            var aContexts = this._aSelectedODataContexts.slice();
 
-            if (!this._oSelectedODataContext) {
+            if (!aContexts.length) {
                 this._clearSelection();
                 return;
             }
 
             BusyIndicator.show(0);
-            this._oSelectedODataContext.delete().then(function () {
+            Promise.all(aContexts.map(function (oContext) {
+                return oContext.delete("$auto");
+            })).then(function () {
                 that._clearSelection();
                 return that.reloadModels();
             }).then(function () {
                 BusyIndicator.hide();
-                MessageToast.show("Model deleted!");
+                MessageToast.show(aContexts.length + " model(s) deleted.");
             }).catch(function (oError) {
                 BusyIndicator.hide();
-                MessageBox.error("Failed to delete model: " + oError.message);
+                MessageBox.error("Failed to delete selected models: " + oError.message);
             });
         },
 
         // ===================== Pagination =====================
-        // Design: this._aAllModels always holds the FULL dataset (all rows from
-        // modelsWithMe.json). The "models" model bound to the table only ever
-        // holds the current page's slice (this._iPageSize rows). The four
-        // goToXxxPage handlers below just move this._iCurrentPage and call
-        // _updatePage() to recompute and re-render that slice.
 
         // Jump to page 1.
         goToFirstPage: function () {
