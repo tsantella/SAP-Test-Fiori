@@ -1,0 +1,41 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core">
+
+    <Dialog id="dlgSendModels"
+            title="{sendDialog>/title}"
+            contentWidth="420px"
+            resizable="false"
+            class="newCycleDialog">
+        <content>
+            <VBox id="sendModelsDialogContent" class="sapUiSmallMargin">
+                <Text id="txtSendModelsSummary"
+                    text="{sendDialog>/summary}"
+                    class="sapUiSmallMarginBottom"/>
+                <Label id="lblSendModelsRecipients"
+                        text="Recipient email(s)"
+                        labelFor="inpSendModelsRecipients"
+                        required="true"/>
+                <Input id="inpSendModelsRecipients"
+                        value="{sendDialog>/recipients}"
+                        placeholder="name@example.com, another@example.com"/>
+                <Text id="txtSendModelsHint"
+                    text="Separate multiple addresses with commas (max 10)."
+                    class="sapUiTinyMarginTop"/>
+            </VBox>
+        </content>
+        <beginButton>
+            <Button id="btnSendModelsConfirm"
+                    text="Send"
+                    type="Emphasized"
+                    press="onConfirmSendModels"
+                    class="pillButton"/>
+        </beginButton>
+        <endButton>
+            <Button id="btnSendModelsCancel"
+                    text="Cancel"
+                    press="onCancelSendModels"
+                    class="pillButton pillButtonGrey"/>
+        </endButton>
+    </Dialog>
+</core:FragmentDefinition>

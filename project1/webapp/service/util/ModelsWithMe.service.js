@@ -5,8 +5,9 @@ sap.ui.define([
     "sap/m/MessageToast",
     "sap/m/MessageBox",
     "sap/ui/core/EventBus",
-    "sap/ui/core/BusyIndicator"
-], function (BaseObject, JSONModel, Fragment, MessageToast, MessageBox, EventBus, BusyIndicator) {
+    "sap/ui/core/BusyIndicator",
+    "sap/ui/model/Sorter"
+], function (BaseObject, JSONModel, Fragment, MessageToast, MessageBox, EventBus, BusyIndicator, Sorter) {
     "use strict";
 
     /**
@@ -31,11 +32,13 @@ sap.ui.define([
             this._iCurrentPage = 1;
             this._aAllModels = [];
             this._aFilteredModels = [];
-            this._oSelectedContext = null;
+            this._oSelectedIds = {};
             this._oSelectedODataContext = null;
             this._aSelectedODataContexts = [];
             this._oContextsById = {};
             this._oImportDialog = null;
+            this._oSendDialog = null;
+            this._oSendRequest = null;
         },
 
         // ===================== lifecycle =====================
@@ -101,6 +104,10 @@ sap.ui.define([
                 this._oImportDialog.destroy();
                 this._oImportDialog = null;
             }
+            if (this._oSendDialog) {
+                this._oSendDialog.destroy();
+                this._oSendDialog = null;
+            }
             BaseObject.prototype.destroy.apply(this, arguments);
         },
 
@@ -112,7 +119,12 @@ sap.ui.define([
         reloadModels: function () {
             var that = this;
             var oODataModel = this._oController.getOwnerComponent().getModel();
-            var oListBinding = oODataModel.bindList("/Models");
+            var oListBinding = oODataModel.bindList("/Models", null, [
+                new Sorter("oeGroup"),
+                new Sorter("brand"),
+                new Sorter("model"),
+                new Sorter("ID")
+            ]);
 
             return oListBinding.requestContexts(0, 10000).then(function (aContexts) {
                 that._oContextsById = {};
@@ -125,6 +137,14 @@ sap.ui.define([
                 that._aAllModels = aData;
                 that._aFilteredModels = aData.slice();
                 that._iCurrentPage = 1;
+
+                // Removes selections for models that no longer exist.
+                Object.keys(that._oSelectedIds).forEach(function (sId) {
+                    if (!that._oContextsById[sId]) {
+                        delete that._oSelectedIds[sId];
+                    }
+                });
+
                 that._updatePage();
                 that._rebuildDropdownOptions();
             }).catch(function (oError) {
@@ -138,69 +158,79 @@ sap.ui.define([
             return this._oController.byId(sId);
         },
 
-        // Fires when a table row is clicked (bound via press="onRowPress" in the view).
-        // Highlights the clicked row and enables the Edit/Delete buttons.
+        // ===================== Selection =====================
+
+        // Toggles the clicked row's selection.
         selectRow: function (oEvent) {
-            var oItem = oEvent.getSource();
-            var oTable = this._byId("tblModels");
-
-            oTable.removeSelections(true);
-            oTable.setSelectedItem(oItem, true);
-            this._updateSelection([oItem]);
+            var sId = oEvent.getSource().getBindingContext("models").getObject().ID;
+            this._setSelected(sId, !this._oSelectedIds[sId]);
+            this._syncSelectionState();
         },
 
+        // Opens the row's preview.
         _openPreviewForItem: function (oItem) {
-            var oTable = this._byId("tblModels");
-            this._clearSelection();
-            oTable.setSelectedItem(oItem, true);
-            this._updateSelection([oItem]);
+            var sId = oItem.getBindingContext("models").getObject().ID;
+            var oContext = this._oContextsById[sId];
             this._pDefaultsLoaded.then(() => {
-                this._openModelDetail("view");
+                this._openModelDetail("view", oContext);
             });
         },
 
-        selectRows: function () {
-            var oTable = this._byId("tblModels");
-            this._updateSelection(oTable.getSelectedItems());
-        },
-
-        _updateSelection: function (aSelectedItems) {
+        // Updates the selection when checkboxes are toggled.
+        selectRows: function (oEvent) {
             var that = this;
-            var oTable = this._byId("tblModels");
-
-            oTable.getItems().forEach(function (row) {
-                row.toggleStyleClass("rowSelected", aSelectedItems.indexOf(row) !== -1);
+            var bSelected = oEvent.getParameter("selected");
+            oEvent.getParameter("listItems").forEach(function (oItem) {
+                that._setSelected(oItem.getBindingContext("models").getObject().ID, bSelected);
             });
-
-            this._aSelectedODataContexts = aSelectedItems.map(function (oItem) {
-                var oData = oItem.getBindingContext("models").getObject();
-                return that._oContextsById[oData.ID];
-            }).filter(Boolean);
-
-            this._oSelectedContext = aSelectedItems.length === 1
-                ? aSelectedItems[0].getBindingContext("models")
-                : null;
-            this._oSelectedODataContext = this._aSelectedODataContexts.length === 1
-                ? this._aSelectedODataContexts[0]
-                : null;
-
-            this._byId("btnModelsEdit").setEnabled(aSelectedItems.length === 1);
-            this._byId("btnModelsDelete").setEnabled(aSelectedItems.length > 0);
+            this._syncSelectionState();
         },
 
-        // Undoes selectRow: removes the highlight from every row and disables
-        // Edit/Delete again. Called when the user clicks outside the table.
-        _clearSelection: function () {
-            var oTable = this._byId("tblModels");
-            oTable.getItems().forEach(function (row) {
-                row.removeStyleClass("rowSelected");
+        // Adds or removes a model ID from the selection.
+        _setSelected: function (sId, bSelected) {
+            if (bSelected) {
+                this._oSelectedIds[sId] = true;
+            } else {
+                delete this._oSelectedIds[sId];
+            }
+        },
+
+        // Updates checkmarks, buttons, and the selected count.
+        _syncSelectionState: function () {
+            var that = this;
+            var aIds = Object.keys(this._oSelectedIds);
+            var iCount = aIds.length;
+
+            this._aSelectedODataContexts = aIds.map(function (sId) {
+                return that._oContextsById[sId];
+            }).filter(Boolean);
+            this._oSelectedODataContext = iCount === 1 ? this._aSelectedODataContexts[0] : null;
+
+            this._byId("tblModels").getItems().forEach(function (oItem) {
+                var bSelected = !!that._oSelectedIds[oItem.getBindingContext("models").getObject().ID];
+                oItem.setSelected(bSelected);
+                oItem.toggleStyleClass("rowSelected", bSelected);
             });
-            this._oSelectedContext = null;
-            this._oSelectedODataContext = null;
-            this._aSelectedODataContexts = [];
-            oTable.removeSelections(true);
-            this._byId("btnModelsEdit").setEnabled(false);
-            this._byId("btnModelsDelete").setEnabled(false);
+
+            this._byId("btnModelsEdit").setEnabled(iCount === 1);
+            this._byId("btnModelsDelete").setEnabled(iCount > 0);
+            this._byId("btnSendMultiple").setEnabled(iCount > 0);
+            this._byId("btnModelsDelete").setText(iCount > 0 ? "Delete (" + iCount + ")" : "Delete");
+            this._byId("btnSendMultiple").setText(iCount > 0 ? "Send Multiple Models (" + iCount + ")" : "Send Multiple Models");
+            this._byId("txtSelectedCount").setText(iCount + " selected");
+            this._byId("txtSelectedCount").setVisible(iCount > 0);
+            this._byId("lnkClearSelection").setVisible(iCount > 0);
+        },
+
+        // Clears the selection.
+        clearSelection: function () {
+            this._clearSelection();
+        },
+
+        // Clears the selection.
+        _clearSelection: function () {
+            this._oSelectedIds = {};
+            this._syncSelectionState();
         },
 
         // ===================== Search =====================
@@ -272,41 +302,35 @@ sap.ui.define([
         // Opens the detail screen in edit mode for the selected row, once the
         // detail screen's defaults (blank template, budget rows, years) are loaded.
         openEdit: function () {
-            var oTable = this._byId("tblModels");
-            var aSelectedItems = oTable.getSelectedItems();
+            var oContext = this._oSelectedODataContext;
 
-            if (!this._oSelectedContext && aSelectedItems.length === 1) {
-                this._updateSelection(aSelectedItems);
-            }
-
-            if (this._oSelectedContext) {
+            if (oContext) {
                 this._pDefaultsLoaded.then(() => {
-                    this._openModelDetail("edit");
+                    this._openModelDetail("edit", oContext);
                 });
             }
         },
 
-        // Opens the detail screen in "create new" mode - clears any current
-        // selection first, since a new record isn't tied to an existing row.
+        // Opens the detail screen in create mode.
         openNew: function () {
-            this._oSelectedContext = null;
             this._pDefaultsLoaded.then(() => {
                 this._openModelDetail("new");
             });
         },
 
-        _openModelDetail: function (sMode) {
+        // Opens the detail screen for a new model, or for the given model in view/edit mode.
+        _openModelDetail: function (sMode, oODataContext) {
             var oSelectedData;
 
             if (sMode === "new") {
                 oSelectedData = this._createBlankModel();
             } else {
-                if (!this._oSelectedContext) {
+                if (!oODataContext) {
                     return;
                 }
-                oSelectedData = this._toDetailModel(this._oSelectedContext.getObject());
+                oSelectedData = this._toDetailModel(oODataContext.getObject());
                 oSelectedData.BudgetRows = this._getMockBudgetRows();
-                oSelectedData._odataPath = this._oSelectedODataContext && this._oSelectedODataContext.getPath();
+                oSelectedData._odataPath = oODataContext.getPath();
             }
 
             oSelectedData._mode = sMode;
@@ -322,7 +346,6 @@ sap.ui.define([
             oSelectedModel.setData(oSelectedData);
 
             var oRouter = oComponent.getRouter();
-            this._clearSelection();
             oRouter.navTo("RouteModelDetail");
         },
 
@@ -457,11 +480,99 @@ sap.ui.define([
             });
         },
 
-        // ===================== Import =====================
-    
+        // ===================== Send (email) =====================
 
-        sendMultiple: function () { MessageToast.show("Send Multiple Models not implemented yet."); },
-        sendAll: function () { MessageToast.show("Send All Models not implemented yet."); },
+        // Send Multiple: capture the checked models' IDs right away, then ask for recipients.
+        sendMultiple: function () {
+            var aIds = this._aSelectedODataContexts.map(function (oContext) {
+                return oContext.getObject().ID;
+            });
+
+            if (!aIds.length) {
+                MessageToast.show("Select at least one model to send.");
+                return;
+            }
+
+            this._openSendDialog(
+                { sendAll: false, modelIds: aIds },
+                "Send Multiple Models",
+                aIds.length + " selected model(s) will be sent."
+            );
+        },
+
+        // Send All: no IDs needed - the backend loads every model itself.
+        sendAll: function () {
+            this._openSendDialog(
+                { sendAll: true, modelIds: [] },
+                "Send All Models",
+                "All " + this._aAllModels.length + " model(s) will be sent."
+            );
+        },
+
+        // Loads the dialog the first time, then reuses it. Resets its text and
+        // clears the recipient box every time it opens.
+        _openSendDialog: function (oRequest, sTitle, sSummary) {
+            var that = this;
+            var oDialogData = { title: sTitle, summary: sSummary, recipients: "" };
+            this._oSendRequest = oRequest;
+
+            if (!this._oSendDialog) {
+                Fragment.load({
+                    id: this._oView.getId(),
+                    name: "project1.view.SendModelsDialog",
+                    controller: this._oController
+                }).then(function (oDialog) {
+                    that._oSendDialog = oDialog;
+                    that._oView.addDependent(oDialog);
+                    oDialog.setModel(new JSONModel(oDialogData), "sendDialog");
+                    oDialog.open();
+                });
+            } else {
+                this._oSendDialog.getModel("sendDialog").setData(oDialogData);
+                this._oSendDialog.open();
+            }
+        },
+
+        closeSendDialog: function () {
+            if (this._oSendDialog) {
+                this._oSendDialog.close();
+            }
+        },
+
+        // Calls the backend sendModels action with the captured request plus the typed recipients.
+        confirmSend: function () {
+            var that = this;
+            var sRaw = this._oSendDialog.getModel("sendDialog").getProperty("/recipients") || "";
+            var aRecipients = sRaw.split(/[,;]/).map(function (s) {
+                return s.trim();
+            }).filter(Boolean);
+
+            if (!aRecipients.length) {
+                MessageToast.show("Enter at least one recipient email address.");
+                return;
+            }
+
+            var oAction = this._oController.getOwnerComponent().getModel().bindContext("/sendModels(...)");
+            oAction.setParameter("modelIds", this._oSendRequest.modelIds);
+            oAction.setParameter("sendAll", this._oSendRequest.sendAll);
+            oAction.setParameter("recipients", aRecipients);
+
+            BusyIndicator.show(0);
+            oAction.execute().then(function () {
+                that.closeSendDialog();
+                // Clears the selection after a Send Multiple.
+                if (!that._oSendRequest.sendAll) {
+                    that._clearSelection();
+                }
+                MessageBox.success(oAction.getBoundContext().getObject().value);
+            }).catch(function (oError) {
+                MessageBox.error("Failed to send email: " + oError.message);
+            }).finally(function () {
+                BusyIndicator.hide();
+            });
+        },
+
+        // ===================== Import =====================
         triggerImport: function () {
             var that = this;
 
@@ -797,6 +908,8 @@ sap.ui.define([
             var aPageData = this._aFilteredModels.slice(iStart, iEnd);
 
             this._oView.getModel("models").setProperty("/Models", aPageData);
+            // Applies the selection to the rows on this page.
+            this._syncSelectionState();
 
             var iFrom = iTotal === 0 ? 0 : iStart + 1;
             this._byId("txtModelsPaginationInfo").setText(iFrom + " to " + iEnd + " of " + iTotal);

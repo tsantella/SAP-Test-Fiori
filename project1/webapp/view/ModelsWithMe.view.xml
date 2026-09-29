@@ -34,7 +34,7 @@
                       <SearchField id="sfModelsSearch" width="16rem" visible="false" liveChange="onSearchLiveChange" placeholder="Search..." class="sapUiTinyMarginBegin"/>
                       <Button id="btnModelsNew" text="New" icon="sap-icon://document-text" press="onNew" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
                       <Button id="btnModelsEdit" text="Edit" icon="sap-icon://edit" press="onEdit" enabled="false" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
-                      <Button id="btnSendMultiple" text="Send Multiple Models" icon="sap-icon://email" press="onSendMultiple" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>      
+                      <Button id="btnSendMultiple" text="Send Multiple Models" icon="sap-icon://email" press="onSendMultiple" enabled="false" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>      
                       <Button id="btnSendAll" text="Send All Models" icon="sap-icon://email" press="onSendAll" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
                       <Button id="btnImport" text="Import" icon="sap-icon://upload" press="onImport" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
                       <Button id="btnExportExcel" text="Export to Excel" icon="sap-icon://download" press="onExportExcel" class="pillButton pillButtonGrey sapUiTinyMarginBegin"/>
@@ -42,11 +42,10 @@
 
                       <ToolbarSpacer id="_IDGenModelsToolbarSpacer"/>
 
-                      <!-- Pagination: wrapped in one HBox so OverflowToolbar treats all 5
-                           controls as a SINGLE item - keeps them together on one row
-                           whether they fit in the bar or get pushed into the overflow
-                           popover, instead of each button stacking on its own row there. -->
+                      <!-- Selected count and pagination, kept together as one toolbar item. -->
                       <HBox id="hboxModelsPagination" alignItems="Center">
+                          <Text id="txtSelectedCount" visible="false" class="sapUiTinyMarginEnd"/>
+                          <Link id="lnkClearSelection" text="Clear selection" press="onClearSelection" visible="false" class="sapUiSmallMarginEnd"/>
                           <Button id="btnModelsFirstPage" icon="sap-icon://media-rewind" type="Transparent" press="onFirstPage" enabled="false" tooltip="First Page"/>
                           <Button id="btnModelsPreviousPage" icon="sap-icon://slim-arrow-left" type="Transparent" press="onPreviousPage" enabled="false" tooltip="Previous Page"/>
                           <Text id="txtModelsPaginationInfo" text="0 to 0 of 0" class="sapUiTinyMarginBeginEnd"/>
