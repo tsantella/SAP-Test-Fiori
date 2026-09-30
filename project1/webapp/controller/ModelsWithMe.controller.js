@@ -53,13 +53,26 @@ sap.ui.define([
             this._oService.deleteSelected();
         },
 
-        // ---- toolbar stubs ----
+        // ---- send (email) ----
         onSendMultiple: function () {
             this._oService.sendMultiple();
         },
 
         onSendAll: function () {
             this._oService.sendAll();
+        },
+
+        onConfirmSendModels: function () {
+            this._oService.confirmSend();
+        },
+
+        onCancelSendModels: function () {
+            this._oService.closeSendDialog();
+        },
+
+        // ---- selection ----
+        onClearSelection: function () {
+            this._oService.clearSelection();
         },
 
         onImport: function () {
