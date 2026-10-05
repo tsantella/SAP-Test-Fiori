@@ -4,7 +4,8 @@ const ExcelJS = require('exceljs');
 
 // ---- sendModels settings ----
 const MAIL_FROM_NAME = 'AUMOVIO LVPF Acceptance - Automotive';
-const MAX_RECIPIENTS = 10;
+const MAX_TO = 5;
+const MAX_CC = 3;
 const MAX_BODY_ROWS = 50;
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -104,6 +105,21 @@ function createTransport() {
     });
 }
 
+// Trims the addresses and removes empty entries and duplicates.
+function cleanAddresses(list) {
+    const seen = new Set();
+    return (list || [])
+        .map((address) => String(address).trim())
+        .filter((address) => {
+            const key = address.toLowerCase();
+            if (!address || seen.has(key)) {
+                return false;
+            }
+            seen.add(key);
+            return true;
+        });
+}
+
   /**
    * CyclesService custom logic.
    *
@@ -144,17 +160,22 @@ function createTransport() {
 
     // Emails a summary of models (plus a full .xlsx attachment) to the given recipients.
     this.on('sendModels', async (req) => {
-        const { modelIds, sendAll, recipients } = req.data;
+        const { modelIds, sendAll, recipients, cc } = req.data;
 
         // 1. Validate the recipients.
-        const toList = (recipients || []).map((r) => String(r).trim()).filter(Boolean);
+        const toList = cleanAddresses(recipients);
+        const toKeys = new Set(toList.map((address) => address.toLowerCase()));
+        const ccList = cleanAddresses(cc).filter((address) => !toKeys.has(address.toLowerCase()));
         if (!toList.length) {
             return req.error(400, 'Enter at least one recipient email address.');
         }
-        if (toList.length > MAX_RECIPIENTS) {
-            return req.error(400, `You can send to at most ${MAX_RECIPIENTS} recipients at a time.`);
+        if (toList.length > MAX_TO) {
+            return req.error(400, `You can send to at most ${MAX_TO} recipients at a time.`);
         }
-        const invalid = toList.filter((r) => !EMAIL_PATTERN.test(r));
+        if (ccList.length > MAX_CC) {
+            return req.error(400, `You can add at most ${MAX_CC} CC addresses.`);
+        }
+        const invalid = toList.concat(ccList).filter((address) => !EMAIL_PATTERN.test(address));
         if (invalid.length) {
             return req.error(400, `Invalid email address: ${invalid.join(', ')}`);
         }
@@ -174,23 +195,47 @@ function createTransport() {
             return req.error(404, 'No models found to send.');
         }
 
-        // 3. Build the attachment and send one email.
+        // 3. Build the email once and send it to each recipient separately.
+        let attachment;
         try {
-            const attachment = await buildWorkbook(models);
-            const info = await createTransport().sendMail({
-                from: { name: MAIL_FROM_NAME, address: process.env.MAIL_FROM },
-                to: toList.join(', '),
-                subject: `Models with me - ${models.length} model(s)`,
-                html: buildEmailBody(models),
-                attachments: [{ filename: 'Models_with_me.xlsx', content: Buffer.from(attachment) }]
-            });
-
-            // Only Ethereal returns a preview link; real providers return false here.
-            const previewUrl = nodemailer.getTestMessageUrl(info);
-            return `Email sent to ${toList.join(', ')} with ${models.length} model(s).`
-                + (previewUrl ? ` Preview: ${previewUrl}` : '');
+            attachment = Buffer.from(await buildWorkbook(models));
         } catch (err) {
-            return req.error(502, `Failed to send email: ${err.message}`);
+            return req.error(500, `Failed to build the attachment: ${err.message}`);
         }
+
+        const transport = createTransport();
+        const subject = `Models with me - ${models.length} model(s)`;
+        const html = buildEmailBody(models);
+        const sent = [];
+        const failed = [];
+
+        for (const to of toList) {
+            try {
+                await transport.sendMail({
+                    from: { name: MAIL_FROM_NAME, address: process.env.MAIL_FROM },
+                    to,
+                    cc: ccList.length ? ccList.join(', ') : undefined,
+                    subject,
+                    html,
+                    attachments: [{ filename: 'Models_with_me.xlsx', content: attachment }]
+                });
+                sent.push(to);
+            } catch (err) {
+                failed.push(`${to} (${err.message})`);
+            }
+        }
+
+        // 4. Report the result.
+        if (!sent.length) {
+            return req.error(502, `Failed to send email: ${failed.join('; ')}`);
+        }
+        let message = `Email sent individually to ${sent.length} of ${toList.length} recipient(s) with ${models.length} model(s).`;
+        if (ccList.length) {
+            message += ` CC: ${ccList.join(', ')}.`;
+        }
+        if (failed.length) {
+            message += ` Failed: ${failed.join('; ')}`;
+        }
+        return message;
     });
   });
