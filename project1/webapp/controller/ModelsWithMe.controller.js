@@ -70,6 +70,10 @@ sap.ui.define([
             this._oService.closeSendDialog();
         },
 
+        onSendAddressChange: function () {
+            this._oService.validateSendDialog();
+        },
+
         // ---- selection ----
         onClearSelection: function () {
             this._oService.clearSelection();

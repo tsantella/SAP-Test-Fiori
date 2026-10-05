@@ -10,6 +10,11 @@ sap.ui.define([
 ], function (BaseObject, JSONModel, Fragment, MessageToast, MessageBox, EventBus, BusyIndicator, Sorter) {
     "use strict";
 
+    // Send dialog limits and email format.
+    var MAX_TO = 5;
+    var MAX_CC = 3;
+    var EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     /**
      * ModelsWithMe service.
      *
@@ -513,7 +518,17 @@ sap.ui.define([
         // clears the recipient box every time it opens.
         _openSendDialog: function (oRequest, sTitle, sSummary) {
             var that = this;
-            var oDialogData = { title: sTitle, summary: sSummary, recipients: "" };
+            var oDialogData = {
+                title: sTitle,
+                summary: sSummary,
+                recipients: "",
+                cc: "",
+                ccEnabled: false,
+                toError: "",
+                ccError: "",
+                toTouched: false,
+                canSend: false
+            };
             this._oSendRequest = oRequest;
 
             if (!this._oSendDialog) {
@@ -539,23 +554,83 @@ sap.ui.define([
             }
         },
 
+        // Splits the typed text into a list of addresses.
+        _splitAddresses: function (sRaw) {
+            return (sRaw || "").split(/[,;]/).map(function (s) {
+                return s.trim();
+            }).filter(Boolean);
+        },
+
+        // Returns the first problem in the address list, or an empty string.
+        _checkAddresses: function (aAddresses, iMax, sLimitMessage, aToAddresses) {
+            var oSeen = {};
+            var aToKeys = (aToAddresses || []).map(function (s) {
+                return s.toLowerCase();
+            });
+
+            for (var i = 0; i < aAddresses.length; i++) {
+                var sAddress = aAddresses[i];
+                var sKey = sAddress.toLowerCase();
+                if (!EMAIL_PATTERN.test(sAddress)) {
+                    return "Invalid email address: " + sAddress;
+                }
+                if (oSeen[sKey]) {
+                    return "Duplicate address: " + sAddress;
+                }
+                if (aToKeys.indexOf(sKey) !== -1) {
+                    return "Already in To: " + sAddress;
+                }
+                oSeen[sKey] = true;
+            }
+
+            if (aAddresses.length > iMax) {
+                return sLimitMessage;
+            }
+            return "";
+        },
+
+        // Checks the To and CC fields and updates the error messages and the Send button.
+        validateSendDialog: function () {
+            var oModel = this._oSendDialog.getModel("sendDialog");
+            var aTo = this._splitAddresses(oModel.getProperty("/recipients"));
+            var bCcEnabled = oModel.getProperty("/ccEnabled");
+            var aCc = bCcEnabled ? this._splitAddresses(oModel.getProperty("/cc")) : [];
+            var sToError;
+            var sCcError = "";
+
+            if (aTo.length) {
+                oModel.setProperty("/toTouched", true);
+                sToError = this._checkAddresses(aTo, MAX_TO, "You can send to at most " + MAX_TO + " recipients.");
+            } else {
+                sToError = oModel.getProperty("/toTouched") ? "To is required." : "";
+            }
+
+            if (bCcEnabled) {
+                sCcError = this._checkAddresses(aCc, MAX_CC, "You can add at most " + MAX_CC + " CC addresses.", aTo);
+            }
+
+            oModel.setProperty("/toError", sToError);
+            oModel.setProperty("/ccError", sCcError);
+            oModel.setProperty("/canSend", aTo.length > 0 && !sToError && !sCcError);
+        },
+
         // Calls the backend sendModels action with the captured request plus the typed recipients.
         confirmSend: function () {
             var that = this;
-            var sRaw = this._oSendDialog.getModel("sendDialog").getProperty("/recipients") || "";
-            var aRecipients = sRaw.split(/[,;]/).map(function (s) {
-                return s.trim();
-            }).filter(Boolean);
+            var oModel = this._oSendDialog.getModel("sendDialog");
 
-            if (!aRecipients.length) {
-                MessageToast.show("Enter at least one recipient email address.");
+            if (!oModel.getProperty("/canSend")) {
                 return;
             }
+
+            var aRecipients = this._splitAddresses(oModel.getProperty("/recipients"));
+            var aCc = oModel.getProperty("/ccEnabled") ? this._splitAddresses(oModel.getProperty("/cc")) : [];
 
             var oAction = this._oController.getOwnerComponent().getModel().bindContext("/sendModels(...)");
             oAction.setParameter("modelIds", this._oSendRequest.modelIds);
             oAction.setParameter("sendAll", this._oSendRequest.sendAll);
             oAction.setParameter("recipients", aRecipients);
+            oAction.setParameter("cc", aCc);
 
             BusyIndicator.show(0);
             oAction.execute().then(function () {
@@ -564,7 +639,13 @@ sap.ui.define([
                 if (!that._oSendRequest.sendAll) {
                     that._clearSelection();
                 }
-                MessageBox.success(oAction.getBoundContext().getObject().value);
+                var sResult = oAction.getBoundContext().getObject().value;
+                // Shows a warning when some recipients failed.
+                if (sResult.indexOf(" Failed: ") !== -1) {
+                    MessageBox.warning(sResult);
+                } else {
+                    MessageBox.success(sResult);
+                }
             }).catch(function (oError) {
                 MessageBox.error("Failed to send email: " + oError.message);
             }).finally(function () {

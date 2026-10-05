@@ -12,22 +12,60 @@
                 <Text id="txtSendModelsSummary"
                     text="{sendDialog>/summary}"
                     class="sapUiSmallMarginBottom"/>
+
+                <!-- To -->
                 <Label id="lblSendModelsRecipients"
-                        text="Recipient email(s)"
+                        text="To"
                         labelFor="inpSendModelsRecipients"
                         required="true"/>
                 <Input id="inpSendModelsRecipients"
                         value="{sendDialog>/recipients}"
+                        valueLiveUpdate="true"
+                        liveChange="onSendAddressChange"
+                        valueState="{= ${sendDialog>/toError} ? 'Error' : 'None' }"
                         placeholder="name@example.com, another@example.com"/>
+                <ObjectStatus id="txtSendModelsToError"
+                        text="{sendDialog>/toError}"
+                        state="Error"
+                        icon="sap-icon://error"
+                        visible="{= !!${sendDialog>/toError} }"
+                        class="sapUiTinyMarginTop"/>
+
+                <!-- CC -->
+                <CheckBox id="chkSendModelsCc"
+                        text="Add CC"
+                        selected="{sendDialog>/ccEnabled}"
+                        select="onSendAddressChange"
+                        class="sapUiSmallMarginTop"/>
+                <VBox id="vboxSendModelsCc" visible="{sendDialog>/ccEnabled}">
+                    <Label id="lblSendModelsCc"
+                            text="CC"
+                            labelFor="inpSendModelsCc"/>
+                    <Input id="inpSendModelsCc"
+                            value="{sendDialog>/cc}"
+                            valueLiveUpdate="true"
+                            liveChange="onSendAddressChange"
+                            valueState="{= ${sendDialog>/ccError} ? 'Error' : 'None' }"
+                            placeholder="name@example.com"/>
+                    <ObjectStatus id="txtSendModelsCcError"
+                            text="{sendDialog>/ccError}"
+                            state="Error"
+                            icon="sap-icon://error"
+                            visible="{= !!${sendDialog>/ccError} }"
+                            class="sapUiTinyMarginTop"/>
+                </VBox>
+
+                <!-- Hint -->
                 <Text id="txtSendModelsHint"
-                    text="Separate multiple addresses with commas (max 10)."
-                    class="sapUiTinyMarginTop"/>
+                    text="Separate addresses with commas (To: max 5, CC: max 3). Each recipient gets a separate email. CC addresses receive a copy of each one."
+                    class="sapUiSmallMarginTop"/>
             </VBox>
         </content>
         <beginButton>
             <Button id="btnSendModelsConfirm"
                     text="Send"
                     type="Emphasized"
+                    enabled="{sendDialog>/canSend}"
                     press="onConfirmSendModels"
                     class="pillButton"/>
         </beginButton>
