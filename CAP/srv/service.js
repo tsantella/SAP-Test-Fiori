@@ -242,7 +242,7 @@ function createTransport() {
             cron.schedule(expression, async () => {
                 try {
                     await cds.tx({ user: cds.User.privileged }, async() => {
-                        const { removed } = await removeDuplicateCycles(true);
+                        const { removed } = await removeDuplicateCycles(false);
                         console.log(`[SCHEDULER] Removed duplicates ${removed}`);
                     });
                 } catch(error) {
