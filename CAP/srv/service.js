@@ -227,6 +227,9 @@ function createTransport() {
         return { removed: duplicateIds.length, dryRun: !!dryRun };
     }
 
+
+    // For this setup scheduler will be available when configuration for scheduler is enabled in environment config
+    // "ENABLE_SCHEDULER": "true",
     if (process.env.ENABLE_SCHEDULER == 'true') {
         const expression = process.env.SCHEDULER_INTERVAL;
         const timezone = process.env.SCHEDULER_TIMEZONE
