@@ -1,6 +1,7 @@
 const cds = require('@sap/cds');
 const nodemailer = require('nodemailer');
 const ExcelJS = require('exceljs');
+const cron = require('node-cron');
 
 // ---- sendModels settings ----
 const MAIL_FROM_NAME = 'AUMOVIO LVPF Acceptance - Automotive';
@@ -193,4 +194,58 @@ function createTransport() {
             return req.error(502, `Failed to send email: ${err.message}`);
         }
     });
+
+    this.on('schedulerRemoveDuplicates', async(req) => {
+        const { removed, dryRun } = await removeDuplicateCycles(req.data.dryRun);
+        return dryRun
+            ? `Dry run: ${removed} duplicates would be set to deleted.`
+            : `Marked ${removed} duplicates deleted.`
+    });
+
+    async function removeDuplicateCycles(dryRun) {
+        const cycles = await SELECT.from('cycles.Cycles')
+            .where('deleted = 0 or deleted is null')
+            .orderBy('ID');
+
+        const seenTitles = new Set();
+        const duplicateIds = [];
+
+        for (const cycle of cycles) {
+            if (!cycle.title) continue;
+
+            if (seenTitles.has(cycle.title)) {
+                duplicateIds.push(cycle.ID);
+            } else {
+                seenTitles.add(cycle.title);
+            }
+        }
+
+        if (!dryRun && duplicateIds.length) {
+            await UPDATE('cycles.Cycles').set({ deleted: 1 }).where({ ID: { in: duplicateIds } });
+        }
+
+        return { removed: duplicateIds.length, dryRun: !!dryRun };
+    }
+
+    if (process.env.ENABLE_SCHEDULER == 'true') {
+        const expression = process.env.SCHEDULER_INTERVAL;
+        const timezone = process.env.SCHEDULER_TIMEZONE
+            ? { timezone: process.env.SCHEDULER_TIMEZONE}
+            : {};
+
+        if (!cron.validate(expression)) {
+            console.error(`[SCHEDULER] Invalid cron expression "${expression}"`);
+        } else {
+            cron.schedule(expression, async () => {
+                try {
+                    await cds.tx({ user: cds.User.privileged }, async() => {
+                        const { removed } = await removeDuplicateCycles(true);
+                        console.log(`[SCHEDULER] Removed duplicates ${removed}`);
+                    });
+                } catch(error) {
+                    console.error('[SCHEDULER] removeDuplicates failed: ', error.message);
+                }
+            }, timezone);
+        }
+    }
   });
